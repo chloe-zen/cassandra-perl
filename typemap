@@ -1,0 +1,13 @@
+TYPEMAP
+XClient *	T_PTROBJ
+string		T_CPPSTRING
+
+INPUT
+T_CPPSTRING
+    { STRLEN tn;
+      const char *tp = SvPV($arg, tn);
+      $var.assign(tp, tn); }
+
+OUTPUT:
+T_CPPSTRING
+    sv_setpvn_mg($arg, $var.data(), $var.size());
