@@ -31,9 +31,8 @@
 #  endif
 #endif
 
-//----------------------------------------------------------------
-// Cassandra <-> SVs
-//----------------------------------------------------------------
+
+// Cassandra headers
 
 #include <Cassandra.h>
 #include <transport/TSocket.h>
@@ -45,26 +44,90 @@ using namespace std;
 using namespace org::apache::cassandra;
 using namespace apache::thrift;  // assuming no conflict
 
-static Clock *new_clock(pTHX_ SV *sv) {
-    SvGETMAGIC(sv);
-    auto_ptr<Clock> c(new Clock);
-#if IVSIZE > 4
-    if (SvIOK(sv))
-        c->timestamp = SvIOK_UV(sv) ? (int64_t)SvUVX(sv) : (int64_t)SvIVX(sv);
-    else
-#endif
-    if (SvNOK(sv))
-        c->timestamp = SvNVX(sv);
-    else {
-        char *e;
-        c->timestamp = strtoll(SvPV_nolen(sv), &e, 0);
-        if (*e)
-            warn("invalid numeric characters in timestamp: %_", sv);
-    }
-    return c.release();
-}
 
-static void assign_to_map(pTHX_ map<string,string> &m, SV *sv) {
+//----------------------------------------------------------------
+// How to turn C++ exceptions into calls of Carp::croak
+//----------------------------------------------------------------
+
+#define TRY \
+    do {                   \
+      bool kaboom = false; \
+      char croak_msg[256]; \
+      try
+
+#define CATCH   CATCH_WITH()
+#define CATCH_WITH(RECOVERY) \
+      catch (const std::exception &e) {                         \
+        kaboom = true;                                          \
+        snprintf(croak_msg, sizeof croak_msg, "%s", e.what());  \
+      }                                                         \
+      catch (...) {                                             \
+        kaboom = true;                                          \
+        strcpy(croak_msg, "Unknown exception");                 \
+      }                                                         \
+      if (kaboom) {                                             \
+        RECOVERY;                                               \
+        ENTER;                                                  \
+        SAVETMPS;                                               \
+        PUSHMARK(SP);                                           \
+        XPUSHs(sv_2mortal(newSVpv(croak_msg, 0)));              \
+        PUTBACK;                                                \
+        call_pv("Carp::confess", G_DISCARD);                    \
+        SPAGAIN;                                                \
+        FREETMPS;                                               \
+        LEAVE;                                                  \
+        Perl_croak(aTHX_ "BUG: confess() did not die! %s", croak_msg); \
+      }                                                         \
+    } while (0)
+
+
+//----------------------------------------------------------------
+// Cassandra <-> SVs
+//----------------------------------------------------------------
+
+
+static SV *pl_av_fetch_safe(pTHX_ AV *av, I32 index) {
+    SV **svp = av_fetch(av, index, 0);
+    return svp ? *svp : &PL_sv_undef;
+}
+#define av_fetch_safe(av,index)  pl_av_fetch_safe(aTHX_ av,index)
+
+
+static SV *pl_hv_fetch_safe(pTHX_ HV *hv, const char *key, I32 klen) {
+    SV **svp = hv_fetch(hv, key, klen, 0);
+    return svp ? *svp : &PL_sv_undef;
+}
+#define hv_fetch_safe(hv,key,klen)  pl_hv_fetch_safe(aTHX_ hv,key,klen)
+#define hv_fetchs_safe(hv,key)      pl_hv_fetch_safe(aTHX_ hv,key,sizeof(key)-1)
+
+
+static string pl_make_string(pTHX_ SV *sv) {
+    STRLEN tn;
+    const char *tp = SvPV(sv, tn);
+    string(tp, tn);
+}
+static void pl_assign_string(pTHX_ string &s, SV *sv) {
+    STRLEN tn;
+    const char *tp = SvPV(sv, tn);
+    s.assign(tp, tn);
+}
+static void pl_assign_string_maybe(pTHX_ string &s, bool &isset, SV *sv) {
+    SvGETMAGIC(sv);
+    if ((isset = SvOK(sv))) {
+        STRLEN tn;
+        const char *tp = SvPV_nomg(sv, tn);
+        s.assign(tp, tn);
+    }
+}
+#define make_string(sv)               pl_make_string(aTHX_ sv)
+#define assign_string(s,sv)           pl_assign_string(aTHX_ s,sv)
+#define assign_string_maybe(s,is,sv)  pl_assign_string_maybe(aTHX_ s,is,sv)
+
+
+#define newSVstring(s)  newSVpvn((s).data(), (s).size())
+
+
+static void assign_map(pTHX_ map<string,string> &m, SV *sv) {
     if (SvTYPE(sv) != SVt_PVHV)
         croak("expected hash to initialize map");
 
@@ -74,17 +137,113 @@ static void assign_to_map(pTHX_ map<string,string> &m, SV *sv) {
     SV *valsv;
     char *kp;
     I32 klen;
-    while ((valsv = hv_iternextsv(hv, &kp, &klen)) && klen >= 0) {
-        STRLEN vlen;
-        const char *vp = SvPV(valsv, vlen);
-        m[string(kp, klen)] = string(vp, vlen);
+    while ((valsv = hv_iternextsv(hv, &kp, &klen)) && klen >= 0)
+        m[string(kp, klen)] = make_string(valsv);
+}
+
+
+//----------------------------------------------------------------
+// Generic assignment of SV* to Thrift objects 
+// The single function name "pl_assign_thrift" appears in the typemap
+//
+
+#define assign_thrift(t,sv)  pl_assign_thrift(aTHX_ t,sv)
+#define output_thrift(t)     pl_output_thrift(aTHX_ t)
+
+// AuthenticationRequest
+
+static void pl_assign_thrift(pTHX_ AuthenticationRequest &ar, SV *src_sv) {
+    assign_map(aTHX_ ar.credentials, src_sv);
+}
+
+// ColumnPath
+
+static void pl_assign_thrift(pTHX_ ColumnPath &cp, SV *src_sv) {
+    bool has_family = false;
+    switch (SvTYPE(src_sv)) {
+      case SVt_PVAV: {
+        AV *av = (AV*)src_sv;
+        assign_string_maybe(cp.column_family, has_family,               av_fetch_safe(av, 0));
+        assign_string_maybe(cp.super_column,  cp.__isset.super_column,  av_fetch_safe(av, 1));
+        assign_string_maybe(cp.column,        cp.__isset.column,        av_fetch_safe(av, 2));
+        break;
+      }
+
+      case SVt_PVHV: {
+        HV *hv = (HV*)src_sv;
+        assign_string_maybe(cp.column_family, has_family,              hv_fetchs_safe(hv, "family"));
+        assign_string_maybe(cp.super_column,  cp.__isset.super_column, hv_fetchs_safe(hv, "super_column"));
+        assign_string_maybe(cp.column,        cp.__isset.column,       hv_fetchs_safe(hv, "column"));
+        break;
+      }
+
+      default:
+        assign_string_maybe(cp.column_family, has_family,              src_sv);
+        break;
+    }
+    if (!has_family)
+        throw "Missing column family in column path";
+}
+
+// Clock
+
+static void pl_assign_thrift(pTHX_ Clock &clock, SV *sv) {
+    SvGETMAGIC(sv);
+#if IVSIZE > 4
+    if (SvIOK(sv))
+        clock.timestamp = SvIOK_UV(sv) ? (int64_t)SvUVX(sv) : (int64_t)SvIVX(sv);
+    else
+#endif
+    if (SvNOK(sv))
+        clock.timestamp = SvNVX(sv);
+    else {
+        char *e;
+        clock.timestamp = strtoll(SvPV_nolen(sv), &e, 0);
+        if (*e)
+            warn("invalid numeric characters in timestamp: %_", sv);
     }
 }
 
-static AuthenticationRequest *new_authreq(pTHX_ SV *sv) {
-    auto_ptr<AuthenticationRequest> ar;
-    assign_to_map(aTHX_ ar->credentials, sv);
-    return ar.release();
+static SV *pl_output_thrift(pTHX_ const Clock &clock) {
+#if IVSIZE > 4
+    return newSViv(clock.timestamp);
+#else
+    return newSVnv((NV)clock.timestamp);
+#endif
+}
+
+// Column
+
+static SV *pl_output_thrift(pTHX_ const Column &col) {
+    AV *av = newAV();
+    av_push(av, newSVstring(col.value));
+    av_push(av, output_thrift(col.clock));
+    if (col.__isset.ttl)
+        av_push(av, newSViv(col.ttl));
+}
+
+// SuperColumn
+
+static SV *pl_output_thrift(pTHX_ const SuperColumn &sc) {
+    AV *columns = newAV();
+    for (size_t i = 0; i < sc.columns.size(); ++i)
+        av_push(columns, output_thrift(sc.columns[i]));
+
+    HV *hv = newHV();
+    hv_stores(hv, "name",    newSVstring(sc.name));
+    hv_stores(hv, "columns", (SV*)columns);
+    return (SV*)hv;
+}
+
+// ColumnOrSuperColumn
+
+static SV *pl_output_thrift(pTHX_ const ColumnOrSuperColumn &cos) {
+    if (cos.__isset.super_column)
+        return output_thrift(cos.super_column);
+    else if (cos.__isset.column)
+        return output_thrift(cos.column);
+    else
+        return &PL_sv_undef;
 }
 
 
@@ -141,11 +300,43 @@ XClient::disconnect()
     tsock->close();
 
 
+# virtual AccessLevel login(const AuthenticationRequest& auth_request) = 0;
+
+AccessLevel
+XClient::login(AuthenticationRequest authreq)
+  CODE:
+    TRY {
+      RETVAL = THIS->login(authreq);
+    } CATCH;
+  OUTPUT:
+    RETVAL
+
+
+# virtual void set_keyspace(const std::string& keyspace) = 0;
+
+void
+XClient::set_keyspace(string keyspace)
+  CODE:
+    TRY {
+      THIS->set_keyspace(keyspace);
+    } CATCH;
+
+
+# virtual void get(ColumnOrSuperColumn& _return, const std::string& key, const ColumnPath& column_path, const ConsistencyLevel consistency_level) = 0;
+
+ColumnOrSuperColumn
+XClient::_get(string key, ColumnPath colpath, ConsistencyLevel conlev)
+  CODE:
+    TRY {
+      THIS->get(RETVAL, key, colpath, conlev);
+    } CATCH;
+  OUTPUT:
+    RETVAL
+
+
 =for never
 
-  virtual AccessLevel login(const AuthenticationRequest& auth_request) = 0;
-  virtual void set_keyspace(const std::string& keyspace) = 0;
-  virtual void get(ColumnOrSuperColumn& _return, const std::string& key, const ColumnPath& column_path, const ConsistencyLevel consistency_level) = 0;
+
   virtual void get_slice(std::vector<ColumnOrSuperColumn> & _return, const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level) = 0;
   virtual int32_t get_count(const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level) = 0;
   virtual void multiget_slice(std::map<std::string, std::vector<ColumnOrSuperColumn> > & _return, const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level) = 0;
