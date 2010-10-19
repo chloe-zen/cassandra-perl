@@ -297,7 +297,30 @@ static SV *pl_colval_newsv(pTHX_ const Column &col) {
 // SuperColumn value (no name): vector<Column> as HV
 
 static void pl_assign_thrift(pTHX_ vector<Column> &cols, SV *src_sv) {
-    // TODO
+    switch (SvTYPE(src_sv)) {
+      case SVt_PVHV: {
+        HV *hv = (HV *)src_sv;
+        hv_iterinit(hv);
+
+        if (! SvTIED_mg((SV*)hv, PERL_MAGIC_tied))
+            cols.resize(HvKEYS(hv));
+
+        SV *valsv;
+        char *kp;
+        I32 klen;
+        size_t i;
+        for (i = 0; (valsv = hv_iternextsv(hv, &kp, &klen)); ++i) {
+            cols[i].name.assign(kp, klen);
+            assign_colval(cols[i], valsv);
+        }
+
+        cols.resize(i);  // in case HvKEYS() lied
+        break;
+      }
+
+      default:
+        throw "expected a hash for columns";
+    }
 }
 
 // forward declaration:
