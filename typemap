@@ -11,6 +11,7 @@ ColumnOrSuperColumn	T_THRIFT
 ColumnParent		T_THRIFT
 ColumnPath		T_THRIFT
 SlicePredicate		T_THRIFT
+MutationMap		T_THRIFT
 vector<ColumnOrSuperColumn>  T_THRIFT
 
 INPUT

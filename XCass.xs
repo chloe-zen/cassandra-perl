@@ -80,6 +80,18 @@ using namespace apache::thrift;  // assuming no conflict
       }                                                         \
     } while (0)
 
+namespace {
+    class bad_conversion : public exception {
+      public:
+        explicit bad_conversion (const string &s, const char *whatfor =0)
+            : _what(s)
+            { if (whatfor) { _what += " for "; _what += whatfor; } }
+        virtual ~bad_conversion() throw () {}
+        const char *what() const throw () { return _what.c_str(); }
+      private:
+        string _what;
+    };
+}
 
 //----------------------------------------------------------------
 // Cassandra <-> SVs
@@ -171,10 +183,10 @@ static void pl_assign_string_maybe(pTHX_ string &s, bool &isset, SV *sv) {
 // safe strings in hashes
 
 static void assign_map(pTHX_ map<string,string> &m, SV *sv) {
-    if (SvTYPE(sv) != SVt_PVHV)
-        croak("expected hash to initialize map");
-
-    HV *hv = (HV *)sv;
+    SvGETMAGIC(sv);
+    if (!SvROK(sv) || SvTYPE(SvRV(sv)) != SVt_PVHV)
+        croak("expected hashref to initialize map");
+    HV *hv = (HV *)SvRV(sv);
     hv_iterinit(hv);
 
     SV *valsv;
@@ -208,31 +220,28 @@ static void pl_assign_cp(pTHX_ string *fam,
                          string *col, bool *icol,
                          SV *src_sv) {
     bool has_family = false;
-    switch (SvTYPE(src_sv)) {
-      case SVt_PVAV: {
-        AV *src_av = (AV*)src_sv;
+
+    SvGETMAGIC(src_sv);
+    if (SvROK(src_sv) && SvTYPE(SvRV(src_sv)) == SVt_PVAV) {
+        AV *src_av = (AV*)SvRV(src_sv);
         I32 ix = 0;
                  assign_string_maybe(*fam, has_family, av_fetch_safe(src_av, ix++));
         if (sup) assign_string_maybe(*sup, *isup,      av_fetch_safe(src_av, ix++));
         if (col) assign_string_maybe(*col, *icol,      av_fetch_safe(src_av, ix++));
-        break;
-      }
-
-      case SVt_PVHV: {
-        HV *src_hv = (HV*)src_sv;
+    }
+    else if (SvROK(src_sv) && SvTYPE(SvRV(src_sv)) == SVt_PVHV) {
+        HV *src_hv = (HV*)SvRV(src_sv);
                  assign_string_maybe(*fam, has_family, hv_fetchs_safe(src_hv, "family"));
         if (sup) assign_string_maybe(*sup, *isup,      hv_fetchs_safe(src_hv, "super_column"));
         if (col) assign_string_maybe(*col, *icol,      hv_fetchs_safe(src_hv, "column"));
-        break;
-      }
-
-      default:
-        assign_string_maybe(*fam, has_family, src_sv);
-        break;
     }
+    else {
+        assign_string_maybe(*fam, has_family, src_sv);
+    }
+
     if (!has_family)
-        throw col ? "Missing column family in column path"
-                  : "Missing column family in column parent";
+        throw bad_conversion(col ? "Missing column family in column path"
+                                 : "Missing column family in column parent");
 }
 
 static void pl_assign_thrift(pTHX_ ColumnPath &path, SV *src_sv) {
@@ -257,32 +266,28 @@ static void pl_assign_thrift(pTHX_ ColumnParent &parent, SV *src_sv) {
 
 static void pl_assign_colval(pTHX_ Column &col, SV *src_sv) {
     SV **svp;
-    switch (SvTYPE(src_sv)) {
-      case SVt_PVAV: {
-        AV *av = (AV*)src_sv;
+
+    SvGETMAGIC(src_sv);
+    if (SvROK(src_sv) && SvTYPE(SvRV(src_sv)) == SVt_PVAV) {
+        AV *av = (AV*)SvRV(src_sv);
         I32 ix = 0;
         assign_string(col.value, av_fetch_safe(av, ix++));
         if ((svp = av_fetch(av, ix++, 0))) {
             col.ttl = SvIV(*svp);
             col.__isset.ttl = true;
         }
-        break;
-      }
-
-      case SVt_PVHV: {
-        HV *src_hv = (HV*)src_sv;
+    }
+    else if (SvROK(src_sv) && SvTYPE(SvRV(src_sv)) == SVt_PVHV) {
+        HV *src_hv = (HV*)SvRV(src_sv);
         if ((svp = hv_fetchs(src_hv, "value", 0)))
             assign_string(col.value, *svp);
         if ((svp = hv_fetchs(src_hv, "ttl", 0))) {
             col.ttl = SvIV(*svp);
             col.__isset.ttl = true;
         }
-        break;
-      }
-
-      default:
+    }
+    else {
         assign_string(col.value, src_sv);
-        break;
     }
 }
 
@@ -297,8 +302,8 @@ static SV *pl_colval_newsv(pTHX_ const Column &col) {
 // SuperColumn value (no name): vector<Column> as HV
 
 static void pl_assign_thrift(pTHX_ vector<Column> &cols, SV *src_sv) {
-    switch (SvTYPE(src_sv)) {
-      case SVt_PVHV: {
+    SvGETMAGIC(src_sv);
+    if (SvROK(src_sv) && SvTYPE(SvRV(src_sv)) == SVt_PVHV) {
         HV *hv = (HV *)src_sv;
         hv_iterinit(hv);
 
@@ -315,12 +320,9 @@ static void pl_assign_thrift(pTHX_ vector<Column> &cols, SV *src_sv) {
         }
 
         cols.resize(i);  // in case HvKEYS() lied
-        break;
-      }
-
-      default:
-        throw "expected a hash for columns";
     }
+    else
+        throw bad_conversion("expected a hashref for columns");
 }
 
 // forward declaration:
@@ -343,27 +345,28 @@ static SV *pl_thrift_newsv(pTHX_ const vector<Column> &cols) {
 // Column and SuperColumn as hash with name key are so similar,
 //   it seems best to combine them
 
-static SV *_get_single_hash(pTHX_ SV *hash_sv, string &out_key) {
-    if (SvTYPE(hash_sv) != SVt_PVHV)
-        throw "expected a hash";
-    HV *hv = (HV *)hash_sv;
+static SV *_get_single_hash(pTHX_ SV *src_sv, string &out_key, const char *whatfor) {
+    SvGETMAGIC(src_sv);
+    if (!(SvROK(src_sv) && SvTYPE(SvRV(src_sv)) == SVt_PVHV))
+        throw bad_conversion("expected a hashref for ", whatfor);
+    HV *hv = (HV *)SvRV(src_sv);
     hv_iterinit(hv);
 
     SV *valsv;
     char *kp;
     I32 klen;
     if (!(valsv = hv_iternextsv(hv, &kp, &klen)))
-        throw "expected a hash with one key";
+        throw bad_conversion("expected a hash with one key", whatfor);
     if (hv_iternext(hv))
-        throw "expected a hash with one key";
+        throw bad_conversion("expected a hash with one key", whatfor);
     out_key.assign(kp, klen);
     return valsv;
 }
 static void pl_assign_thrift(pTHX_ Column &col, SV *src_sv) {
-    assign_colval(col,        _get_single_hash(aTHX_ src_sv, col.name));
+    assign_colval(col,        _get_single_hash(aTHX_ src_sv, col.name, "column"));
 }
 static void pl_assign_thrift(pTHX_ SuperColumn &sc, SV *src_sv) {
-    assign_thrift(sc.columns, _get_single_hash(aTHX_ src_sv, sc.name));
+    assign_thrift(sc.columns, _get_single_hash(aTHX_ src_sv, sc.name,  "supercolumn"));
 }
 
 static void _hv_store_thrift(pTHX_ HV *hv, const Column &col) {
@@ -428,35 +431,33 @@ static void pl_assign_slicerange_maybe(pTHX_ SliceRange &out_sr, bool &isset, HV
 }
 
 static void pl_assign_thrift(pTHX_ SliceRange &out_sr, SV *src_sv) {
-    if (SvTYPE(src_sv) != SVt_PVHV) {
-        SvGETMAGIC(src_sv);
-        if (!SvOK(src_sv))
-            return;          // it's empty, so no range
-        throw "expected hash for slice range";
-    }
+    SvGETMAGIC(src_sv);
+    if (!SvOK(src_sv))
+        return; // that's OK -- undef means no range
+    if (!(SvROK(src_sv) && SvTYPE(SvRV(src_sv)) == SVt_PVHV))
+        throw bad_conversion("expected undef or hashref for slice range");
+
     bool ignored_isset;
-    pl_assign_slicerange_maybe(aTHX_ out_sr, ignored_isset, (HV*)src_sv);
+    pl_assign_slicerange_maybe(aTHX_ out_sr, ignored_isset, (HV*)SvRV(src_sv));
 }
 
 
 // SlicePredicate
 
 static void pl_assign_thrift(pTHX_ SlicePredicate &out_sp, SV *src_sv) {
-    if (SvTYPE(src_sv) != SVt_PVHV) {
-        SvGETMAGIC(src_sv);
-        if (!SvOK(src_sv))
-            return;          // it's empty, so no predicate
-        throw "expected hash for slice predicate";
-    }
-
-    HV *hv = (HV*)src_sv;
-    SV **svp;
+    SvGETMAGIC(src_sv);
+    if (!SvOK(src_sv))
+        return; // that's OK -- undef means no range
+    if (!(SvROK(src_sv) && SvTYPE(SvRV(src_sv)) == SVt_PVHV))
+        throw bad_conversion("expected undef or hashref for slice predicate");
+    HV *hv = (HV*)SvRV(src_sv);
 
     pl_assign_slicerange_maybe(aTHX_ out_sp.slice_range, out_sp.__isset.slice_range, hv);
 
+    SV **svp;
     if ((svp = hv_fetchs(hv, "columns", 0))) {
         if (SvTYPE(*svp) != SVt_PVAV)
-            throw "expected array for slice predicate 'columns'";
+            throw bad_conversion("expected array for slice predicate 'columns'");
         out_sp.__isset.column_names = true;
         AV *av = (AV *)*svp;
         I32 amax = av_len(av);
@@ -466,7 +467,7 @@ static void pl_assign_thrift(pTHX_ SlicePredicate &out_sp, SV *src_sv) {
 }
 
 
-// a vector of any thrift type
+// a simple vector of any thrift type
 
 template <class T>
 SV *pl_thrift_newsv(pTHX_ const vector<T> &v) {
@@ -482,6 +483,69 @@ SV *pl_thrift_newsv(pTHX_ const vector<T> &v) {
     return (SV*)av;
 }
 
+
+// the rather complex mutation map, which is input only (thank goodness)
+
+typedef map<string, map<string, vector<Mutation> > > MutationMap;
+
+static void pl_assign_thrift(pTHX_ MutationMap &out_mm, SV *src_sv) {
+    SvGETMAGIC(src_sv);
+    if (!(SvROK(src_sv) && SvTYPE(SvRV(src_sv)) == SVt_PVHV))
+        throw bad_conversion("expected hashref for mutation map");
+    HV *keys_hv = (HV*)SvRV(src_sv);
+    hv_iterinit(keys_hv);
+
+    SV *fams_sv;
+    char *kp;
+    I32 klen;
+    while ((fams_sv = hv_iternextsv(keys_hv, &kp, &klen))) {
+        string key(kp, klen);
+
+        SvGETMAGIC(fams_sv);
+        if (!SvROK(fams_sv) || SvTYPE(SvRV(fams_sv)) != SVt_PVHV)
+            throw bad_conversion("expected hashref for second level of mutation map");
+        HV *fams_hv = (HV*)SvRV(fams_sv);
+        hv_iterinit(fams_hv);
+
+        char *fam_p;
+        I32 fam_len;
+        SV *cols_sv;
+        while ((cols_sv = hv_iternextsv(fams_hv, &fam_p, &fam_len))) {
+            string fam(fam_p, fam_len);
+
+            SvGETMAGIC(cols_sv);
+            if (!SvROK(cols_sv) || SvTYPE(SvRV(cols_sv)) != SVt_PVHV)
+                throw bad_conversion("expected hashref for third level of mutation map");
+            HV *cols_hv = (HV*)SvRV(cols_sv);
+            hv_iterinit(cols_hv);
+
+            vector<Mutation> &mutvec( out_mm[key][fam] );
+            if (! SvTIED_mg((SV*)cols_hv, PERL_MAGIC_tied))
+                mutvec.resize(HvKEYS(cols_hv));
+            size_t mut_ix = 0;
+
+            char *col_p;
+            I32 col_len;
+            SV *mut_sv;
+            while ((mut_sv = hv_iternextsv(cols_hv, &col_p, &col_len))) {
+                Mutation &mut( mutvec[mut_ix++] );
+
+                SvGETMAGIC(mut_sv);
+                if (!SvOK(mut_sv)) {
+                    //////// FIXME - complex deletion
+                    ////// mut.deletion = true;
+                    mut.__isset.deletion = true;
+                }
+                else {
+                    mut.column_or_supercolumn.column.name.assign(col_p, col_len);  //// FIXME - supercols?
+                    assign_colval(mut.column_or_supercolumn.column, mut_sv);       //// FIXME - supercols?
+                    mut.column_or_supercolumn.__isset.column = true;               //// FIXME - supercols?
+                    mut.__isset.column_or_supercolumn = true;
+                }
+            }
+        }
+    }
+}
 
 //----------------------------------------------------------------
 // transport helpers
@@ -597,6 +661,13 @@ XClient::_remove(string key, ColumnPath column_path, int64_t timestamp, Consiste
     } CATCH;
 
 # virtual void batch_mutate(const std::map<std::string, std::map<std::string, std::vector<Mutation> > > & mutation_map, const ConsistencyLevel consistency_level) = 0;
+
+void
+XClient::batch_mutate(MutationMap mutation_map, ConsistencyLevel consistency_level)
+  CODE:
+    TRY {
+      THIS->batch_mutate(mutation_map, consistency_level);
+    } CATCH;
 
 =for never
 
