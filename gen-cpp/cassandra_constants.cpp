@@ -10,7 +10,7 @@ namespace org { namespace apache { namespace cassandra {
 const cassandraConstants g_cassandra_constants;
 
 cassandraConstants::cassandraConstants() {
-  VERSION = "11.1.0";
+  VERSION = "17.1.0";
 
 }
 

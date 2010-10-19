@@ -22,7 +22,7 @@ class CassandraHandler : virtual public CassandraIf {
     // Your initialization goes here
   }
 
-  AccessLevel login(const AuthenticationRequest& auth_request) {
+  void login(const AuthenticationRequest& auth_request) {
     // Your implementation goes here
     printf("login\n");
   }
@@ -52,7 +52,7 @@ class CassandraHandler : virtual public CassandraIf {
     printf("multiget_slice\n");
   }
 
-  void multiget_count(std::map<std::string, int32_t> & _return, const std::string& keyspace, const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level) {
+  void multiget_count(std::map<std::string, int32_t> & _return, const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level) {
     // Your implementation goes here
     printf("multiget_count\n");
   }
@@ -72,7 +72,7 @@ class CassandraHandler : virtual public CassandraIf {
     printf("insert\n");
   }
 
-  void remove(const std::string& key, const ColumnPath& column_path, const Clock& clock, const ConsistencyLevel consistency_level) {
+  void remove(const std::string& key, const ColumnPath& column_path, const int64_t timestamp, const ConsistencyLevel consistency_level) {
     // Your implementation goes here
     printf("remove\n");
   }
@@ -87,9 +87,9 @@ class CassandraHandler : virtual public CassandraIf {
     printf("truncate\n");
   }
 
-  void check_schema_agreement(std::map<std::string, std::vector<std::string> > & _return) {
+  void describe_schema_versions(std::map<std::string, std::vector<std::string> > & _return) {
     // Your implementation goes here
-    printf("check_schema_agreement\n");
+    printf("describe_schema_versions\n");
   }
 
   void describe_keyspaces(std::vector<KsDef> & _return) {
@@ -117,12 +117,17 @@ class CassandraHandler : virtual public CassandraIf {
     printf("describe_partitioner\n");
   }
 
+  void describe_snitch(std::string& _return) {
+    // Your implementation goes here
+    printf("describe_snitch\n");
+  }
+
   void describe_keyspace(KsDef& _return, const std::string& keyspace) {
     // Your implementation goes here
     printf("describe_keyspace\n");
   }
 
-  void describe_splits(std::vector<std::string> & _return, const std::string& keyspace, const std::string& cfName, const std::string& start_token, const std::string& end_token, const int32_t keys_per_split) {
+  void describe_splits(std::vector<std::string> & _return, const std::string& cfName, const std::string& start_token, const std::string& end_token, const int32_t keys_per_split) {
     // Your implementation goes here
     printf("describe_splits\n");
   }
@@ -155,6 +160,16 @@ class CassandraHandler : virtual public CassandraIf {
   void system_rename_keyspace(std::string& _return, const std::string& old_name, const std::string& new_name) {
     // Your implementation goes here
     printf("system_rename_keyspace\n");
+  }
+
+  void system_update_keyspace(std::string& _return, const KsDef& ks_def) {
+    // Your implementation goes here
+    printf("system_update_keyspace\n");
+  }
+
+  void system_update_column_family(std::string& _return, const CfDef& cf_def) {
+    // Your implementation goes here
+    printf("system_update_column_family\n");
   }
 
 };

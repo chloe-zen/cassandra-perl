@@ -14,13 +14,23 @@ namespace org { namespace apache { namespace cassandra {
 trlo_typespec_cassandra_DA45EC4BE6574774008DF9BE683A4778(
   ::apache::thrift::protocol::T_I32);
 
-const char* Clock::ascii_fingerprint = "56A59CE7FFAF82BCA8A19FAACDE4FB75";
-const uint8_t Clock::binary_fingerprint[16] = {0x56,0xA5,0x9C,0xE7,0xFF,0xAF,0x82,0xBC,0xA8,0xA1,0x9F,0xAA,0xCD,0xE4,0xFB,0x75};
+const char* Column::ascii_fingerprint = "AFF5A2690BB9979816507B2F6BD21062";
+const uint8_t Column::binary_fingerprint[16] = {0xAF,0xF5,0xA2,0x69,0x0B,0xB9,0x97,0x98,0x16,0x50,0x7B,0x2F,0x6B,0xD2,0x10,0x62};
+
+// string
+::apache::thrift::reflection::local::TypeSpec
+trlo_typespec_cassandra_B45CFFE084DD3D20D928BEE85E7B0F21(
+  ::apache::thrift::protocol::T_STRING);
 
 // i64
 ::apache::thrift::reflection::local::TypeSpec
 trlo_typespec_cassandra_DD1D26230D15C93E8FBDBA07B0299A44(
   ::apache::thrift::protocol::T_I64);
+
+// i32
+::apache::thrift::reflection::local::TypeSpec
+trlo_typespec_cassandra_F89EDB52B075B8BD95989BD3D0A04C0A(
+  ::apache::thrift::protocol::T_I32);
 
 // void
 ::apache::thrift::reflection::local::TypeSpec
@@ -28,95 +38,7 @@ trlo_typespec_cassandra_CAB8111FD0B710A336C898E539090E34(
   ::apache::thrift::protocol::T_STOP);
 
 ::apache::thrift::reflection::local::FieldMeta
-trlo_metas_cassandra_56A59CE7FFAF82BCA8A19FAACDE4FB75[] = {
-  { 1, false },
-  { 0, false }
-};
-::apache::thrift::reflection::local::TypeSpec*
-trlo_specs_cassandra_56A59CE7FFAF82BCA8A19FAACDE4FB75[] = {
-  &trlo_typespec_cassandra_DD1D26230D15C93E8FBDBA07B0299A44,
-  &trlo_typespec_cassandra_CAB8111FD0B710A336C898E539090E34,
-};
-// {1:i64;}
-::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_56A59CE7FFAF82BCA8A19FAACDE4FB75(
-  ::apache::thrift::protocol::T_STRUCT,
-  Clock::binary_fingerprint,
-  trlo_metas_cassandra_56A59CE7FFAF82BCA8A19FAACDE4FB75,
-  trlo_specs_cassandra_56A59CE7FFAF82BCA8A19FAACDE4FB75);
-
-::apache::thrift::reflection::local::TypeSpec* Clock::local_reflection = 
-  &trlo_typespec_cassandra_56A59CE7FFAF82BCA8A19FAACDE4FB75;
-
-uint32_t Clock::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-  bool isset_timestamp = false;
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 1:
-        if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->timestamp);
-          isset_timestamp = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      default:
-        xfer += iprot->skip(ftype);
-        break;
-    }
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  if (!isset_timestamp)
-    throw TProtocolException(TProtocolException::INVALID_DATA);
-  return xfer;
-}
-
-uint32_t Clock::write(::apache::thrift::protocol::TProtocol* oprot) const {
-  uint32_t xfer = 0;
-  xfer += oprot->writeStructBegin("Clock");
-  xfer += oprot->writeFieldBegin("timestamp", ::apache::thrift::protocol::T_I64, 1);
-  xfer += oprot->writeI64(this->timestamp);
-  xfer += oprot->writeFieldEnd();
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  return xfer;
-}
-
-const char* Column::ascii_fingerprint = "311FAD2042360258ECFB01FECDADC5A0";
-const uint8_t Column::binary_fingerprint[16] = {0x31,0x1F,0xAD,0x20,0x42,0x36,0x02,0x58,0xEC,0xFB,0x01,0xFE,0xCD,0xAD,0xC5,0xA0};
-
-// string
-::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_B45CFFE084DD3D20D928BEE85E7B0F21(
-  ::apache::thrift::protocol::T_STRING);
-
-// i32
-::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_F89EDB52B075B8BD95989BD3D0A04C0A(
-  ::apache::thrift::protocol::T_I32);
-
-::apache::thrift::reflection::local::FieldMeta
-trlo_metas_cassandra_311FAD2042360258ECFB01FECDADC5A0[] = {
+trlo_metas_cassandra_AFF5A2690BB9979816507B2F6BD21062[] = {
   { 1, false },
   { 2, false },
   { 3, false },
@@ -124,23 +46,23 @@ trlo_metas_cassandra_311FAD2042360258ECFB01FECDADC5A0[] = {
   { 0, false }
 };
 ::apache::thrift::reflection::local::TypeSpec*
-trlo_specs_cassandra_311FAD2042360258ECFB01FECDADC5A0[] = {
+trlo_specs_cassandra_AFF5A2690BB9979816507B2F6BD21062[] = {
   &trlo_typespec_cassandra_B45CFFE084DD3D20D928BEE85E7B0F21,
   &trlo_typespec_cassandra_B45CFFE084DD3D20D928BEE85E7B0F21,
-  &trlo_typespec_cassandra_56A59CE7FFAF82BCA8A19FAACDE4FB75,
+  &trlo_typespec_cassandra_DD1D26230D15C93E8FBDBA07B0299A44,
   &trlo_typespec_cassandra_F89EDB52B075B8BD95989BD3D0A04C0A,
   &trlo_typespec_cassandra_CAB8111FD0B710A336C898E539090E34,
 };
-// {1:string;2:string;3:{1:i64;};4:opt-i32;}
+// {1:string;2:string;3:i64;4:opt-i32;}
 ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_311FAD2042360258ECFB01FECDADC5A0(
+trlo_typespec_cassandra_AFF5A2690BB9979816507B2F6BD21062(
   ::apache::thrift::protocol::T_STRUCT,
   Column::binary_fingerprint,
-  trlo_metas_cassandra_311FAD2042360258ECFB01FECDADC5A0,
-  trlo_specs_cassandra_311FAD2042360258ECFB01FECDADC5A0);
+  trlo_metas_cassandra_AFF5A2690BB9979816507B2F6BD21062,
+  trlo_specs_cassandra_AFF5A2690BB9979816507B2F6BD21062);
 
 ::apache::thrift::reflection::local::TypeSpec* Column::local_reflection = 
-  &trlo_typespec_cassandra_311FAD2042360258ECFB01FECDADC5A0;
+  &trlo_typespec_cassandra_AFF5A2690BB9979816507B2F6BD21062;
 
 uint32_t Column::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -155,7 +77,7 @@ uint32_t Column::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   bool isset_name = false;
   bool isset_value = false;
-  bool isset_clock = false;
+  bool isset_timestamp = false;
 
   while (true)
   {
@@ -182,9 +104,9 @@ uint32_t Column::read(::apache::thrift::protocol::TProtocol* iprot) {
         }
         break;
       case 3:
-        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
-          xfer += this->clock.read(iprot);
-          isset_clock = true;
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->timestamp);
+          isset_timestamp = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -210,7 +132,7 @@ uint32_t Column::read(::apache::thrift::protocol::TProtocol* iprot) {
     throw TProtocolException(TProtocolException::INVALID_DATA);
   if (!isset_value)
     throw TProtocolException(TProtocolException::INVALID_DATA);
-  if (!isset_clock)
+  if (!isset_timestamp)
     throw TProtocolException(TProtocolException::INVALID_DATA);
   return xfer;
 }
@@ -224,8 +146,8 @@ uint32_t Column::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("value", ::apache::thrift::protocol::T_STRING, 2);
   xfer += oprot->writeBinary(this->value);
   xfer += oprot->writeFieldEnd();
-  xfer += oprot->writeFieldBegin("clock", ::apache::thrift::protocol::T_STRUCT, 3);
-  xfer += this->clock.write(oprot);
+  xfer += oprot->writeFieldBegin("timestamp", ::apache::thrift::protocol::T_I64, 3);
+  xfer += oprot->writeI64(this->timestamp);
   xfer += oprot->writeFieldEnd();
   if (this->__isset.ttl) {
     xfer += oprot->writeFieldBegin("ttl", ::apache::thrift::protocol::T_I32, 4);
@@ -237,38 +159,38 @@ uint32_t Column::write(::apache::thrift::protocol::TProtocol* oprot) const {
   return xfer;
 }
 
-const char* SuperColumn::ascii_fingerprint = "39CA009A0208AD0DF33E9D8A13CFF871";
-const uint8_t SuperColumn::binary_fingerprint[16] = {0x39,0xCA,0x00,0x9A,0x02,0x08,0xAD,0x0D,0xF3,0x3E,0x9D,0x8A,0x13,0xCF,0xF8,0x71};
+const char* SuperColumn::ascii_fingerprint = "33B3E5A6E294B6FCDB3F6EB567D3DB04";
+const uint8_t SuperColumn::binary_fingerprint[16] = {0x33,0xB3,0xE5,0xA6,0xE2,0x94,0xB6,0xFC,0xDB,0x3F,0x6E,0xB5,0x67,0xD3,0xDB,0x04};
 
-// list<{1:string;2:string;3:{1:i64;};4:opt-i32;}>
+// list<{1:string;2:string;3:i64;4:opt-i32;}>
 ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_CE6AC4479C60ED867180D7EEBBDAECE5(
+trlo_typespec_cassandra_B61FBECB3C53D977CFDB21BAF52C58AD(
   ::apache::thrift::protocol::T_LIST,
-  &trlo_typespec_cassandra_311FAD2042360258ECFB01FECDADC5A0,
+  &trlo_typespec_cassandra_AFF5A2690BB9979816507B2F6BD21062,
   NULL);
 
 ::apache::thrift::reflection::local::FieldMeta
-trlo_metas_cassandra_39CA009A0208AD0DF33E9D8A13CFF871[] = {
+trlo_metas_cassandra_33B3E5A6E294B6FCDB3F6EB567D3DB04[] = {
   { 1, false },
   { 2, false },
   { 0, false }
 };
 ::apache::thrift::reflection::local::TypeSpec*
-trlo_specs_cassandra_39CA009A0208AD0DF33E9D8A13CFF871[] = {
+trlo_specs_cassandra_33B3E5A6E294B6FCDB3F6EB567D3DB04[] = {
   &trlo_typespec_cassandra_B45CFFE084DD3D20D928BEE85E7B0F21,
-  &trlo_typespec_cassandra_CE6AC4479C60ED867180D7EEBBDAECE5,
+  &trlo_typespec_cassandra_B61FBECB3C53D977CFDB21BAF52C58AD,
   &trlo_typespec_cassandra_CAB8111FD0B710A336C898E539090E34,
 };
-// {1:string;2:list<{1:string;2:string;3:{1:i64;};4:opt-i32;}>;}
+// {1:string;2:list<{1:string;2:string;3:i64;4:opt-i32;}>;}
 ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_39CA009A0208AD0DF33E9D8A13CFF871(
+trlo_typespec_cassandra_33B3E5A6E294B6FCDB3F6EB567D3DB04(
   ::apache::thrift::protocol::T_STRUCT,
   SuperColumn::binary_fingerprint,
-  trlo_metas_cassandra_39CA009A0208AD0DF33E9D8A13CFF871,
-  trlo_specs_cassandra_39CA009A0208AD0DF33E9D8A13CFF871);
+  trlo_metas_cassandra_33B3E5A6E294B6FCDB3F6EB567D3DB04,
+  trlo_specs_cassandra_33B3E5A6E294B6FCDB3F6EB567D3DB04);
 
 ::apache::thrift::reflection::local::TypeSpec* SuperColumn::local_reflection = 
-  &trlo_typespec_cassandra_39CA009A0208AD0DF33E9D8A13CFF871;
+  &trlo_typespec_cassandra_33B3E5A6E294B6FCDB3F6EB567D3DB04;
 
 uint32_t SuperColumn::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -358,31 +280,31 @@ uint32_t SuperColumn::write(::apache::thrift::protocol::TProtocol* oprot) const 
   return xfer;
 }
 
-const char* ColumnOrSuperColumn::ascii_fingerprint = "E80F68F70D950C49C938C8F1123596CE";
-const uint8_t ColumnOrSuperColumn::binary_fingerprint[16] = {0xE8,0x0F,0x68,0xF7,0x0D,0x95,0x0C,0x49,0xC9,0x38,0xC8,0xF1,0x12,0x35,0x96,0xCE};
+const char* ColumnOrSuperColumn::ascii_fingerprint = "C3B825B665DD0C548851BCD1D6D0D72E";
+const uint8_t ColumnOrSuperColumn::binary_fingerprint[16] = {0xC3,0xB8,0x25,0xB6,0x65,0xDD,0x0C,0x54,0x88,0x51,0xBC,0xD1,0xD6,0xD0,0xD7,0x2E};
 
 ::apache::thrift::reflection::local::FieldMeta
-trlo_metas_cassandra_E80F68F70D950C49C938C8F1123596CE[] = {
+trlo_metas_cassandra_C3B825B665DD0C548851BCD1D6D0D72E[] = {
   { 1, true },
   { 2, true },
   { 0, false }
 };
 ::apache::thrift::reflection::local::TypeSpec*
-trlo_specs_cassandra_E80F68F70D950C49C938C8F1123596CE[] = {
-  &trlo_typespec_cassandra_311FAD2042360258ECFB01FECDADC5A0,
-  &trlo_typespec_cassandra_39CA009A0208AD0DF33E9D8A13CFF871,
+trlo_specs_cassandra_C3B825B665DD0C548851BCD1D6D0D72E[] = {
+  &trlo_typespec_cassandra_AFF5A2690BB9979816507B2F6BD21062,
+  &trlo_typespec_cassandra_33B3E5A6E294B6FCDB3F6EB567D3DB04,
   &trlo_typespec_cassandra_CAB8111FD0B710A336C898E539090E34,
 };
-// {1:opt-{1:string;2:string;3:{1:i64;};4:opt-i32;};2:opt-{1:string;2:list<{1:string;2:string;3:{1:i64;};4:opt-i32;}>;};}
+// {1:opt-{1:string;2:string;3:i64;4:opt-i32;};2:opt-{1:string;2:list<{1:string;2:string;3:i64;4:opt-i32;}>;};}
 ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_E80F68F70D950C49C938C8F1123596CE(
+trlo_typespec_cassandra_C3B825B665DD0C548851BCD1D6D0D72E(
   ::apache::thrift::protocol::T_STRUCT,
   ColumnOrSuperColumn::binary_fingerprint,
-  trlo_metas_cassandra_E80F68F70D950C49C938C8F1123596CE,
-  trlo_specs_cassandra_E80F68F70D950C49C938C8F1123596CE);
+  trlo_metas_cassandra_C3B825B665DD0C548851BCD1D6D0D72E,
+  trlo_specs_cassandra_C3B825B665DD0C548851BCD1D6D0D72E);
 
 ::apache::thrift::reflection::local::TypeSpec* ColumnOrSuperColumn::local_reflection = 
-  &trlo_typespec_cassandra_E80F68F70D950C49C938C8F1123596CE;
+  &trlo_typespec_cassandra_C3B825B665DD0C548851BCD1D6D0D72E;
 
 uint32_t ColumnOrSuperColumn::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -1634,38 +1556,38 @@ uint32_t KeyRange::write(::apache::thrift::protocol::TProtocol* oprot) const {
   return xfer;
 }
 
-const char* KeySlice::ascii_fingerprint = "2AA4A482655A8D3B33734CC19F3F3515";
-const uint8_t KeySlice::binary_fingerprint[16] = {0x2A,0xA4,0xA4,0x82,0x65,0x5A,0x8D,0x3B,0x33,0x73,0x4C,0xC1,0x9F,0x3F,0x35,0x15};
+const char* KeySlice::ascii_fingerprint = "23AD778D2AF7838AF7670990033673A1";
+const uint8_t KeySlice::binary_fingerprint[16] = {0x23,0xAD,0x77,0x8D,0x2A,0xF7,0x83,0x8A,0xF7,0x67,0x09,0x90,0x03,0x36,0x73,0xA1};
 
-// list<{1:opt-{1:string;2:string;3:{1:i64;};4:opt-i32;};2:opt-{1:string;2:list<{1:string;2:string;3:{1:i64;};4:opt-i32;}>;};}>
+// list<{1:opt-{1:string;2:string;3:i64;4:opt-i32;};2:opt-{1:string;2:list<{1:string;2:string;3:i64;4:opt-i32;}>;};}>
 ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_6DC4BDE6AFB3C0317C2CCDBEE11CDE75(
+trlo_typespec_cassandra_559D7B78703049781D1DF9D834671615(
   ::apache::thrift::protocol::T_LIST,
-  &trlo_typespec_cassandra_E80F68F70D950C49C938C8F1123596CE,
+  &trlo_typespec_cassandra_C3B825B665DD0C548851BCD1D6D0D72E,
   NULL);
 
 ::apache::thrift::reflection::local::FieldMeta
-trlo_metas_cassandra_2AA4A482655A8D3B33734CC19F3F3515[] = {
+trlo_metas_cassandra_23AD778D2AF7838AF7670990033673A1[] = {
   { 1, false },
   { 2, false },
   { 0, false }
 };
 ::apache::thrift::reflection::local::TypeSpec*
-trlo_specs_cassandra_2AA4A482655A8D3B33734CC19F3F3515[] = {
+trlo_specs_cassandra_23AD778D2AF7838AF7670990033673A1[] = {
   &trlo_typespec_cassandra_B45CFFE084DD3D20D928BEE85E7B0F21,
-  &trlo_typespec_cassandra_6DC4BDE6AFB3C0317C2CCDBEE11CDE75,
+  &trlo_typespec_cassandra_559D7B78703049781D1DF9D834671615,
   &trlo_typespec_cassandra_CAB8111FD0B710A336C898E539090E34,
 };
-// {1:string;2:list<{1:opt-{1:string;2:string;3:{1:i64;};4:opt-i32;};2:opt-{1:string;2:list<{1:string;2:string;3:{1:i64;};4:opt-i32;}>;};}>;}
+// {1:string;2:list<{1:opt-{1:string;2:string;3:i64;4:opt-i32;};2:opt-{1:string;2:list<{1:string;2:string;3:i64;4:opt-i32;}>;};}>;}
 ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_2AA4A482655A8D3B33734CC19F3F3515(
+trlo_typespec_cassandra_23AD778D2AF7838AF7670990033673A1(
   ::apache::thrift::protocol::T_STRUCT,
   KeySlice::binary_fingerprint,
-  trlo_metas_cassandra_2AA4A482655A8D3B33734CC19F3F3515,
-  trlo_specs_cassandra_2AA4A482655A8D3B33734CC19F3F3515);
+  trlo_metas_cassandra_23AD778D2AF7838AF7670990033673A1,
+  trlo_specs_cassandra_23AD778D2AF7838AF7670990033673A1);
 
 ::apache::thrift::reflection::local::TypeSpec* KeySlice::local_reflection = 
-  &trlo_typespec_cassandra_2AA4A482655A8D3B33734CC19F3F3515;
+  &trlo_typespec_cassandra_23AD778D2AF7838AF7670990033673A1;
 
 uint32_t KeySlice::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -1849,33 +1771,33 @@ uint32_t KeyCount::write(::apache::thrift::protocol::TProtocol* oprot) const {
   return xfer;
 }
 
-const char* Deletion::ascii_fingerprint = "0CAEBC752C2855B1AB79CBB689947DF2";
-const uint8_t Deletion::binary_fingerprint[16] = {0x0C,0xAE,0xBC,0x75,0x2C,0x28,0x55,0xB1,0xAB,0x79,0xCB,0xB6,0x89,0x94,0x7D,0xF2};
+const char* Deletion::ascii_fingerprint = "1E4E5C4E0D45BE5064D14AFD23096B8B";
+const uint8_t Deletion::binary_fingerprint[16] = {0x1E,0x4E,0x5C,0x4E,0x0D,0x45,0xBE,0x50,0x64,0xD1,0x4A,0xFD,0x23,0x09,0x6B,0x8B};
 
 ::apache::thrift::reflection::local::FieldMeta
-trlo_metas_cassandra_0CAEBC752C2855B1AB79CBB689947DF2[] = {
+trlo_metas_cassandra_1E4E5C4E0D45BE5064D14AFD23096B8B[] = {
   { 1, false },
   { 2, true },
   { 3, true },
   { 0, false }
 };
 ::apache::thrift::reflection::local::TypeSpec*
-trlo_specs_cassandra_0CAEBC752C2855B1AB79CBB689947DF2[] = {
-  &trlo_typespec_cassandra_56A59CE7FFAF82BCA8A19FAACDE4FB75,
+trlo_specs_cassandra_1E4E5C4E0D45BE5064D14AFD23096B8B[] = {
+  &trlo_typespec_cassandra_DD1D26230D15C93E8FBDBA07B0299A44,
   &trlo_typespec_cassandra_B45CFFE084DD3D20D928BEE85E7B0F21,
   &trlo_typespec_cassandra_F59D1D81C17DFFAF09988BF1C9CE5E27,
   &trlo_typespec_cassandra_CAB8111FD0B710A336C898E539090E34,
 };
-// {1:{1:i64;};2:opt-string;3:opt-{1:opt-list<string>;2:opt-{1:string;2:string;3:bool;4:i32;};};}
+// {1:i64;2:opt-string;3:opt-{1:opt-list<string>;2:opt-{1:string;2:string;3:bool;4:i32;};};}
 ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_0CAEBC752C2855B1AB79CBB689947DF2(
+trlo_typespec_cassandra_1E4E5C4E0D45BE5064D14AFD23096B8B(
   ::apache::thrift::protocol::T_STRUCT,
   Deletion::binary_fingerprint,
-  trlo_metas_cassandra_0CAEBC752C2855B1AB79CBB689947DF2,
-  trlo_specs_cassandra_0CAEBC752C2855B1AB79CBB689947DF2);
+  trlo_metas_cassandra_1E4E5C4E0D45BE5064D14AFD23096B8B,
+  trlo_specs_cassandra_1E4E5C4E0D45BE5064D14AFD23096B8B);
 
 ::apache::thrift::reflection::local::TypeSpec* Deletion::local_reflection = 
-  &trlo_typespec_cassandra_0CAEBC752C2855B1AB79CBB689947DF2;
+  &trlo_typespec_cassandra_1E4E5C4E0D45BE5064D14AFD23096B8B;
 
 uint32_t Deletion::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -1888,7 +1810,7 @@ uint32_t Deletion::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   using ::apache::thrift::protocol::TProtocolException;
 
-  bool isset_clock = false;
+  bool isset_timestamp = false;
 
   while (true)
   {
@@ -1899,9 +1821,9 @@ uint32_t Deletion::read(::apache::thrift::protocol::TProtocol* iprot) {
     switch (fid)
     {
       case 1:
-        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
-          xfer += this->clock.read(iprot);
-          isset_clock = true;
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->timestamp);
+          isset_timestamp = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -1931,7 +1853,7 @@ uint32_t Deletion::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   xfer += iprot->readStructEnd();
 
-  if (!isset_clock)
+  if (!isset_timestamp)
     throw TProtocolException(TProtocolException::INVALID_DATA);
   return xfer;
 }
@@ -1939,8 +1861,8 @@ uint32_t Deletion::read(::apache::thrift::protocol::TProtocol* iprot) {
 uint32_t Deletion::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   xfer += oprot->writeStructBegin("Deletion");
-  xfer += oprot->writeFieldBegin("clock", ::apache::thrift::protocol::T_STRUCT, 1);
-  xfer += this->clock.write(oprot);
+  xfer += oprot->writeFieldBegin("timestamp", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->timestamp);
   xfer += oprot->writeFieldEnd();
   if (this->__isset.super_column) {
     xfer += oprot->writeFieldBegin("super_column", ::apache::thrift::protocol::T_STRING, 2);
@@ -1957,31 +1879,31 @@ uint32_t Deletion::write(::apache::thrift::protocol::TProtocol* oprot) const {
   return xfer;
 }
 
-const char* Mutation::ascii_fingerprint = "54FF89DDBC55020F151B9654B1D21FC0";
-const uint8_t Mutation::binary_fingerprint[16] = {0x54,0xFF,0x89,0xDD,0xBC,0x55,0x02,0x0F,0x15,0x1B,0x96,0x54,0xB1,0xD2,0x1F,0xC0};
+const char* Mutation::ascii_fingerprint = "BFF60385C4A40853485F8D8CC62A8C25";
+const uint8_t Mutation::binary_fingerprint[16] = {0xBF,0xF6,0x03,0x85,0xC4,0xA4,0x08,0x53,0x48,0x5F,0x8D,0x8C,0xC6,0x2A,0x8C,0x25};
 
 ::apache::thrift::reflection::local::FieldMeta
-trlo_metas_cassandra_54FF89DDBC55020F151B9654B1D21FC0[] = {
+trlo_metas_cassandra_BFF60385C4A40853485F8D8CC62A8C25[] = {
   { 1, true },
   { 2, true },
   { 0, false }
 };
 ::apache::thrift::reflection::local::TypeSpec*
-trlo_specs_cassandra_54FF89DDBC55020F151B9654B1D21FC0[] = {
-  &trlo_typespec_cassandra_E80F68F70D950C49C938C8F1123596CE,
-  &trlo_typespec_cassandra_0CAEBC752C2855B1AB79CBB689947DF2,
+trlo_specs_cassandra_BFF60385C4A40853485F8D8CC62A8C25[] = {
+  &trlo_typespec_cassandra_C3B825B665DD0C548851BCD1D6D0D72E,
+  &trlo_typespec_cassandra_1E4E5C4E0D45BE5064D14AFD23096B8B,
   &trlo_typespec_cassandra_CAB8111FD0B710A336C898E539090E34,
 };
-// {1:opt-{1:opt-{1:string;2:string;3:{1:i64;};4:opt-i32;};2:opt-{1:string;2:list<{1:string;2:string;3:{1:i64;};4:opt-i32;}>;};};2:opt-{1:{1:i64;};2:opt-string;3:opt-{1:opt-list<string>;2:opt-{1:string;2:string;3:bool;4:i32;};};};}
+// {1:opt-{1:opt-{1:string;2:string;3:i64;4:opt-i32;};2:opt-{1:string;2:list<{1:string;2:string;3:i64;4:opt-i32;}>;};};2:opt-{1:i64;2:opt-string;3:opt-{1:opt-list<string>;2:opt-{1:string;2:string;3:bool;4:i32;};};};}
 ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_54FF89DDBC55020F151B9654B1D21FC0(
+trlo_typespec_cassandra_BFF60385C4A40853485F8D8CC62A8C25(
   ::apache::thrift::protocol::T_STRUCT,
   Mutation::binary_fingerprint,
-  trlo_metas_cassandra_54FF89DDBC55020F151B9654B1D21FC0,
-  trlo_specs_cassandra_54FF89DDBC55020F151B9654B1D21FC0);
+  trlo_metas_cassandra_BFF60385C4A40853485F8D8CC62A8C25,
+  trlo_specs_cassandra_BFF60385C4A40853485F8D8CC62A8C25);
 
 ::apache::thrift::reflection::local::TypeSpec* Mutation::local_reflection = 
-  &trlo_typespec_cassandra_54FF89DDBC55020F151B9654B1D21FC0;
+  &trlo_typespec_cassandra_BFF60385C4A40853485F8D8CC62A8C25;
 
 uint32_t Mutation::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -2414,8 +2336,8 @@ uint32_t ColumnDef::write(::apache::thrift::protocol::TProtocol* oprot) const {
   return xfer;
 }
 
-const char* CfDef::ascii_fingerprint = "272E8EC3FD84A810C93D0A7A08470759";
-const uint8_t CfDef::binary_fingerprint[16] = {0x27,0x2E,0x8E,0xC3,0xFD,0x84,0xA8,0x10,0xC9,0x3D,0x0A,0x7A,0x08,0x47,0x07,0x59};
+const char* CfDef::ascii_fingerprint = "F1977D780FBC587EC4DB0697ED036F3F";
+const uint8_t CfDef::binary_fingerprint[16] = {0xF1,0x97,0x7D,0x78,0x0F,0xBC,0x58,0x7E,0xC4,0xDB,0x06,0x97,0xED,0x03,0x6F,0x3F};
 
 // double
 ::apache::thrift::reflection::local::TypeSpec
@@ -2430,14 +2352,12 @@ trlo_typespec_cassandra_F1B1AE393A6FED8FC52C319F72A0646C(
   NULL);
 
 ::apache::thrift::reflection::local::FieldMeta
-trlo_metas_cassandra_272E8EC3FD84A810C93D0A7A08470759[] = {
+trlo_metas_cassandra_F1977D780FBC587EC4DB0697ED036F3F[] = {
   { 1, false },
   { 2, false },
   { 3, true },
-  { 4, true },
   { 5, true },
   { 6, true },
-  { 7, true },
   { 8, true },
   { 9, true },
   { 10, true },
@@ -2445,12 +2365,14 @@ trlo_metas_cassandra_272E8EC3FD84A810C93D0A7A08470759[] = {
   { 12, true },
   { 13, true },
   { 14, true },
+  { 15, true },
+  { 16, true },
+  { 17, true },
+  { 18, true },
   { 0, false }
 };
 ::apache::thrift::reflection::local::TypeSpec*
-trlo_specs_cassandra_272E8EC3FD84A810C93D0A7A08470759[] = {
-  &trlo_typespec_cassandra_B45CFFE084DD3D20D928BEE85E7B0F21,
-  &trlo_typespec_cassandra_B45CFFE084DD3D20D928BEE85E7B0F21,
+trlo_specs_cassandra_F1977D780FBC587EC4DB0697ED036F3F[] = {
   &trlo_typespec_cassandra_B45CFFE084DD3D20D928BEE85E7B0F21,
   &trlo_typespec_cassandra_B45CFFE084DD3D20D928BEE85E7B0F21,
   &trlo_typespec_cassandra_B45CFFE084DD3D20D928BEE85E7B0F21,
@@ -2463,18 +2385,22 @@ trlo_specs_cassandra_272E8EC3FD84A810C93D0A7A08470759[] = {
   &trlo_typespec_cassandra_E8CD7DA078A86726031AD64F35F5A6C0,
   &trlo_typespec_cassandra_F1B1AE393A6FED8FC52C319F72A0646C,
   &trlo_typespec_cassandra_F89EDB52B075B8BD95989BD3D0A04C0A,
+  &trlo_typespec_cassandra_B45CFFE084DD3D20D928BEE85E7B0F21,
+  &trlo_typespec_cassandra_F89EDB52B075B8BD95989BD3D0A04C0A,
+  &trlo_typespec_cassandra_F89EDB52B075B8BD95989BD3D0A04C0A,
+  &trlo_typespec_cassandra_F89EDB52B075B8BD95989BD3D0A04C0A,
   &trlo_typespec_cassandra_CAB8111FD0B710A336C898E539090E34,
 };
-// {1:string;2:string;3:opt-string;4:opt-string;5:opt-string;6:opt-string;7:opt-string;8:opt-string;9:opt-double;10:opt-bool;11:opt-double;12:opt-double;13:opt-list<{1:string;2:string;3:opt-enum;4:opt-string;}>;14:opt-i32;}
+// {1:string;2:string;3:opt-string;5:opt-string;6:opt-string;8:opt-string;9:opt-double;10:opt-bool;11:opt-double;12:opt-double;13:opt-list<{1:string;2:string;3:opt-enum;4:opt-string;}>;14:opt-i32;15:opt-string;16:opt-i32;17:opt-i32;18:opt-i32;}
 ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_272E8EC3FD84A810C93D0A7A08470759(
+trlo_typespec_cassandra_F1977D780FBC587EC4DB0697ED036F3F(
   ::apache::thrift::protocol::T_STRUCT,
   CfDef::binary_fingerprint,
-  trlo_metas_cassandra_272E8EC3FD84A810C93D0A7A08470759,
-  trlo_specs_cassandra_272E8EC3FD84A810C93D0A7A08470759);
+  trlo_metas_cassandra_F1977D780FBC587EC4DB0697ED036F3F,
+  trlo_specs_cassandra_F1977D780FBC587EC4DB0697ED036F3F);
 
 ::apache::thrift::reflection::local::TypeSpec* CfDef::local_reflection = 
-  &trlo_typespec_cassandra_272E8EC3FD84A810C93D0A7A08470759;
+  &trlo_typespec_cassandra_F1977D780FBC587EC4DB0697ED036F3F;
 
 uint32_t CfDef::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -2522,14 +2448,6 @@ uint32_t CfDef::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 4:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->clock_type);
-          this->__isset.clock_type = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       case 5:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->comparator_type);
@@ -2542,14 +2460,6 @@ uint32_t CfDef::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->subcomparator_type);
           this->__isset.subcomparator_type = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 7:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->reconciler);
-          this->__isset.reconciler = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -2622,6 +2532,38 @@ uint32_t CfDef::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 15:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->default_validation_class);
+          this->__isset.default_validation_class = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 16:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->id);
+          this->__isset.id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 17:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->min_compaction_threshold);
+          this->__isset.min_compaction_threshold = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 18:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->max_compaction_threshold);
+          this->__isset.max_compaction_threshold = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -2652,11 +2594,6 @@ uint32_t CfDef::write(::apache::thrift::protocol::TProtocol* oprot) const {
     xfer += oprot->writeString(this->column_type);
     xfer += oprot->writeFieldEnd();
   }
-  if (this->__isset.clock_type) {
-    xfer += oprot->writeFieldBegin("clock_type", ::apache::thrift::protocol::T_STRING, 4);
-    xfer += oprot->writeString(this->clock_type);
-    xfer += oprot->writeFieldEnd();
-  }
   if (this->__isset.comparator_type) {
     xfer += oprot->writeFieldBegin("comparator_type", ::apache::thrift::protocol::T_STRING, 5);
     xfer += oprot->writeString(this->comparator_type);
@@ -2665,11 +2602,6 @@ uint32_t CfDef::write(::apache::thrift::protocol::TProtocol* oprot) const {
   if (this->__isset.subcomparator_type) {
     xfer += oprot->writeFieldBegin("subcomparator_type", ::apache::thrift::protocol::T_STRING, 6);
     xfer += oprot->writeString(this->subcomparator_type);
-    xfer += oprot->writeFieldEnd();
-  }
-  if (this->__isset.reconciler) {
-    xfer += oprot->writeFieldBegin("reconciler", ::apache::thrift::protocol::T_STRING, 7);
-    xfer += oprot->writeString(this->reconciler);
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.comment) {
@@ -2715,23 +2647,43 @@ uint32_t CfDef::write(::apache::thrift::protocol::TProtocol* oprot) const {
     xfer += oprot->writeI32(this->gc_grace_seconds);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.default_validation_class) {
+    xfer += oprot->writeFieldBegin("default_validation_class", ::apache::thrift::protocol::T_STRING, 15);
+    xfer += oprot->writeString(this->default_validation_class);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.id) {
+    xfer += oprot->writeFieldBegin("id", ::apache::thrift::protocol::T_I32, 16);
+    xfer += oprot->writeI32(this->id);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.min_compaction_threshold) {
+    xfer += oprot->writeFieldBegin("min_compaction_threshold", ::apache::thrift::protocol::T_I32, 17);
+    xfer += oprot->writeI32(this->min_compaction_threshold);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.max_compaction_threshold) {
+    xfer += oprot->writeFieldBegin("max_compaction_threshold", ::apache::thrift::protocol::T_I32, 18);
+    xfer += oprot->writeI32(this->max_compaction_threshold);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
 }
 
-const char* KsDef::ascii_fingerprint = "11CF6A44E7A06AFA50BB8BD483E987DB";
-const uint8_t KsDef::binary_fingerprint[16] = {0x11,0xCF,0x6A,0x44,0xE7,0xA0,0x6A,0xFA,0x50,0xBB,0x8B,0xD4,0x83,0xE9,0x87,0xDB};
+const char* KsDef::ascii_fingerprint = "D3D90EC08AB74A646044B5E43403D43E";
+const uint8_t KsDef::binary_fingerprint[16] = {0xD3,0xD9,0x0E,0xC0,0x8A,0xB7,0x4A,0x64,0x60,0x44,0xB5,0xE4,0x34,0x03,0xD4,0x3E};
 
-// list<{1:string;2:string;3:opt-string;4:opt-string;5:opt-string;6:opt-string;7:opt-string;8:opt-string;9:opt-double;10:opt-bool;11:opt-double;12:opt-double;13:opt-list<{1:string;2:string;3:opt-enum;4:opt-string;}>;14:opt-i32;}>
+// list<{1:string;2:string;3:opt-string;5:opt-string;6:opt-string;8:opt-string;9:opt-double;10:opt-bool;11:opt-double;12:opt-double;13:opt-list<{1:string;2:string;3:opt-enum;4:opt-string;}>;14:opt-i32;15:opt-string;16:opt-i32;17:opt-i32;18:opt-i32;}>
 ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_6C8B0B812D6142F9C0FF505793836FEC(
+trlo_typespec_cassandra_59A7AEBFB6339750D6AD54230D746729(
   ::apache::thrift::protocol::T_LIST,
-  &trlo_typespec_cassandra_272E8EC3FD84A810C93D0A7A08470759,
+  &trlo_typespec_cassandra_F1977D780FBC587EC4DB0697ED036F3F,
   NULL);
 
 ::apache::thrift::reflection::local::FieldMeta
-trlo_metas_cassandra_11CF6A44E7A06AFA50BB8BD483E987DB[] = {
+trlo_metas_cassandra_D3D90EC08AB74A646044B5E43403D43E[] = {
   { 1, false },
   { 2, false },
   { 3, true },
@@ -2740,24 +2692,24 @@ trlo_metas_cassandra_11CF6A44E7A06AFA50BB8BD483E987DB[] = {
   { 0, false }
 };
 ::apache::thrift::reflection::local::TypeSpec*
-trlo_specs_cassandra_11CF6A44E7A06AFA50BB8BD483E987DB[] = {
+trlo_specs_cassandra_D3D90EC08AB74A646044B5E43403D43E[] = {
   &trlo_typespec_cassandra_B45CFFE084DD3D20D928BEE85E7B0F21,
   &trlo_typespec_cassandra_B45CFFE084DD3D20D928BEE85E7B0F21,
   &trlo_typespec_cassandra_E525259F38EF383401EB0A958458F19C,
   &trlo_typespec_cassandra_F89EDB52B075B8BD95989BD3D0A04C0A,
-  &trlo_typespec_cassandra_6C8B0B812D6142F9C0FF505793836FEC,
+  &trlo_typespec_cassandra_59A7AEBFB6339750D6AD54230D746729,
   &trlo_typespec_cassandra_CAB8111FD0B710A336C898E539090E34,
 };
-// {1:string;2:string;3:opt-map<string,string>;4:i32;5:list<{1:string;2:string;3:opt-string;4:opt-string;5:opt-string;6:opt-string;7:opt-string;8:opt-string;9:opt-double;10:opt-bool;11:opt-double;12:opt-double;13:opt-list<{1:string;2:string;3:opt-enum;4:opt-string;}>;14:opt-i32;}>;}
+// {1:string;2:string;3:opt-map<string,string>;4:i32;5:list<{1:string;2:string;3:opt-string;5:opt-string;6:opt-string;8:opt-string;9:opt-double;10:opt-bool;11:opt-double;12:opt-double;13:opt-list<{1:string;2:string;3:opt-enum;4:opt-string;}>;14:opt-i32;15:opt-string;16:opt-i32;17:opt-i32;18:opt-i32;}>;}
 ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_11CF6A44E7A06AFA50BB8BD483E987DB(
+trlo_typespec_cassandra_D3D90EC08AB74A646044B5E43403D43E(
   ::apache::thrift::protocol::T_STRUCT,
   KsDef::binary_fingerprint,
-  trlo_metas_cassandra_11CF6A44E7A06AFA50BB8BD483E987DB,
-  trlo_specs_cassandra_11CF6A44E7A06AFA50BB8BD483E987DB);
+  trlo_metas_cassandra_D3D90EC08AB74A646044B5E43403D43E,
+  trlo_specs_cassandra_D3D90EC08AB74A646044B5E43403D43E);
 
 ::apache::thrift::reflection::local::TypeSpec* KsDef::local_reflection = 
-  &trlo_typespec_cassandra_11CF6A44E7A06AFA50BB8BD483E987DB;
+  &trlo_typespec_cassandra_D3D90EC08AB74A646044B5E43403D43E;
 
 uint32_t KsDef::read(::apache::thrift::protocol::TProtocol* iprot) {
 

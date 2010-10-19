@@ -37,61 +37,9 @@ enum IndexOperator {
   LT = 4
 };
 
-enum AccessLevel {
-  NONE = 0,
-  READONLY = 16,
-  READWRITE = 32,
-  FULL = 64
-};
-
 enum IndexType {
   KEYS = 0
 };
-
-
-class Clock {
- public:
-
-  static const char* ascii_fingerprint; // = "56A59CE7FFAF82BCA8A19FAACDE4FB75";
-  static const uint8_t binary_fingerprint[16]; // = {0x56,0xA5,0x9C,0xE7,0xFF,0xAF,0x82,0xBC,0xA8,0xA1,0x9F,0xAA,0xCD,0xE4,0xFB,0x75};
-
-  Clock() : timestamp(0) {
-  }
-
-  virtual ~Clock() throw() {}
-
-  static ::apache::thrift::reflection::local::TypeSpec* local_reflection;
-
-  int64_t timestamp;
-
-  bool operator == (const Clock & rhs) const
-  {
-    if (!(timestamp == rhs.timestamp))
-      return false;
-    return true;
-  }
-  bool operator != (const Clock &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const Clock & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-// i64
-extern ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_DD1D26230D15C93E8FBDBA07B0299A44;
-
-// void
-extern ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_CAB8111FD0B710A336C898E539090E34;
-
-// {1:i64;}
-extern ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_56A59CE7FFAF82BCA8A19FAACDE4FB75;
 
 typedef struct _Column__isset {
   _Column__isset() : ttl(false) {}
@@ -101,10 +49,10 @@ typedef struct _Column__isset {
 class Column {
  public:
 
-  static const char* ascii_fingerprint; // = "311FAD2042360258ECFB01FECDADC5A0";
-  static const uint8_t binary_fingerprint[16]; // = {0x31,0x1F,0xAD,0x20,0x42,0x36,0x02,0x58,0xEC,0xFB,0x01,0xFE,0xCD,0xAD,0xC5,0xA0};
+  static const char* ascii_fingerprint; // = "AFF5A2690BB9979816507B2F6BD21062";
+  static const uint8_t binary_fingerprint[16]; // = {0xAF,0xF5,0xA2,0x69,0x0B,0xB9,0x97,0x98,0x16,0x50,0x7B,0x2F,0x6B,0xD2,0x10,0x62};
 
-  Column() : name(""), value(""), ttl(0) {
+  Column() : name(""), value(""), timestamp(0), ttl(0) {
   }
 
   virtual ~Column() throw() {}
@@ -113,7 +61,7 @@ class Column {
 
   std::string name;
   std::string value;
-  Clock clock;
+  int64_t timestamp;
   int32_t ttl;
 
   _Column__isset __isset;
@@ -124,7 +72,7 @@ class Column {
       return false;
     if (!(value == rhs.value))
       return false;
-    if (!(clock == rhs.clock))
+    if (!(timestamp == rhs.timestamp))
       return false;
     if (__isset.ttl != rhs.__isset.ttl)
       return false;
@@ -147,20 +95,28 @@ class Column {
 extern ::apache::thrift::reflection::local::TypeSpec
 trlo_typespec_cassandra_B45CFFE084DD3D20D928BEE85E7B0F21;
 
+// i64
+extern ::apache::thrift::reflection::local::TypeSpec
+trlo_typespec_cassandra_DD1D26230D15C93E8FBDBA07B0299A44;
+
 // i32
 extern ::apache::thrift::reflection::local::TypeSpec
 trlo_typespec_cassandra_F89EDB52B075B8BD95989BD3D0A04C0A;
 
-// {1:string;2:string;3:{1:i64;};4:opt-i32;}
+// void
 extern ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_311FAD2042360258ECFB01FECDADC5A0;
+trlo_typespec_cassandra_CAB8111FD0B710A336C898E539090E34;
+
+// {1:string;2:string;3:i64;4:opt-i32;}
+extern ::apache::thrift::reflection::local::TypeSpec
+trlo_typespec_cassandra_AFF5A2690BB9979816507B2F6BD21062;
 
 
 class SuperColumn {
  public:
 
-  static const char* ascii_fingerprint; // = "39CA009A0208AD0DF33E9D8A13CFF871";
-  static const uint8_t binary_fingerprint[16]; // = {0x39,0xCA,0x00,0x9A,0x02,0x08,0xAD,0x0D,0xF3,0x3E,0x9D,0x8A,0x13,0xCF,0xF8,0x71};
+  static const char* ascii_fingerprint; // = "33B3E5A6E294B6FCDB3F6EB567D3DB04";
+  static const uint8_t binary_fingerprint[16]; // = {0x33,0xB3,0xE5,0xA6,0xE2,0x94,0xB6,0xFC,0xDB,0x3F,0x6E,0xB5,0x67,0xD3,0xDB,0x04};
 
   SuperColumn() : name("") {
   }
@@ -191,13 +147,13 @@ class SuperColumn {
 
 };
 
-// list<{1:string;2:string;3:{1:i64;};4:opt-i32;}>
+// list<{1:string;2:string;3:i64;4:opt-i32;}>
 extern ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_CE6AC4479C60ED867180D7EEBBDAECE5;
+trlo_typespec_cassandra_B61FBECB3C53D977CFDB21BAF52C58AD;
 
-// {1:string;2:list<{1:string;2:string;3:{1:i64;};4:opt-i32;}>;}
+// {1:string;2:list<{1:string;2:string;3:i64;4:opt-i32;}>;}
 extern ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_39CA009A0208AD0DF33E9D8A13CFF871;
+trlo_typespec_cassandra_33B3E5A6E294B6FCDB3F6EB567D3DB04;
 
 typedef struct _ColumnOrSuperColumn__isset {
   _ColumnOrSuperColumn__isset() : column(false), super_column(false) {}
@@ -208,8 +164,8 @@ typedef struct _ColumnOrSuperColumn__isset {
 class ColumnOrSuperColumn {
  public:
 
-  static const char* ascii_fingerprint; // = "E80F68F70D950C49C938C8F1123596CE";
-  static const uint8_t binary_fingerprint[16]; // = {0xE8,0x0F,0x68,0xF7,0x0D,0x95,0x0C,0x49,0xC9,0x38,0xC8,0xF1,0x12,0x35,0x96,0xCE};
+  static const char* ascii_fingerprint; // = "C3B825B665DD0C548851BCD1D6D0D72E";
+  static const uint8_t binary_fingerprint[16]; // = {0xC3,0xB8,0x25,0xB6,0x65,0xDD,0x0C,0x54,0x88,0x51,0xBC,0xD1,0xD6,0xD0,0xD7,0x2E};
 
   ColumnOrSuperColumn() {
   }
@@ -246,9 +202,9 @@ class ColumnOrSuperColumn {
 
 };
 
-// {1:opt-{1:string;2:string;3:{1:i64;};4:opt-i32;};2:opt-{1:string;2:list<{1:string;2:string;3:{1:i64;};4:opt-i32;}>;};}
+// {1:opt-{1:string;2:string;3:i64;4:opt-i32;};2:opt-{1:string;2:list<{1:string;2:string;3:i64;4:opt-i32;}>;};}
 extern ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_E80F68F70D950C49C938C8F1123596CE;
+trlo_typespec_cassandra_C3B825B665DD0C548851BCD1D6D0D72E;
 
 
 class NotFoundException : public ::apache::thrift::TException {
@@ -814,8 +770,8 @@ trlo_typespec_cassandra_8F248C09AF1EC3656ABD8565EA1F59C1;
 class KeySlice {
  public:
 
-  static const char* ascii_fingerprint; // = "2AA4A482655A8D3B33734CC19F3F3515";
-  static const uint8_t binary_fingerprint[16]; // = {0x2A,0xA4,0xA4,0x82,0x65,0x5A,0x8D,0x3B,0x33,0x73,0x4C,0xC1,0x9F,0x3F,0x35,0x15};
+  static const char* ascii_fingerprint; // = "23AD778D2AF7838AF7670990033673A1";
+  static const uint8_t binary_fingerprint[16]; // = {0x23,0xAD,0x77,0x8D,0x2A,0xF7,0x83,0x8A,0xF7,0x67,0x09,0x90,0x03,0x36,0x73,0xA1};
 
   KeySlice() : key("") {
   }
@@ -846,13 +802,13 @@ class KeySlice {
 
 };
 
-// list<{1:opt-{1:string;2:string;3:{1:i64;};4:opt-i32;};2:opt-{1:string;2:list<{1:string;2:string;3:{1:i64;};4:opt-i32;}>;};}>
+// list<{1:opt-{1:string;2:string;3:i64;4:opt-i32;};2:opt-{1:string;2:list<{1:string;2:string;3:i64;4:opt-i32;}>;};}>
 extern ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_6DC4BDE6AFB3C0317C2CCDBEE11CDE75;
+trlo_typespec_cassandra_559D7B78703049781D1DF9D834671615;
 
-// {1:string;2:list<{1:opt-{1:string;2:string;3:{1:i64;};4:opt-i32;};2:opt-{1:string;2:list<{1:string;2:string;3:{1:i64;};4:opt-i32;}>;};}>;}
+// {1:string;2:list<{1:opt-{1:string;2:string;3:i64;4:opt-i32;};2:opt-{1:string;2:list<{1:string;2:string;3:i64;4:opt-i32;}>;};}>;}
 extern ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_2AA4A482655A8D3B33734CC19F3F3515;
+trlo_typespec_cassandra_23AD778D2AF7838AF7670990033673A1;
 
 
 class KeyCount {
@@ -903,17 +859,17 @@ typedef struct _Deletion__isset {
 class Deletion {
  public:
 
-  static const char* ascii_fingerprint; // = "0CAEBC752C2855B1AB79CBB689947DF2";
-  static const uint8_t binary_fingerprint[16]; // = {0x0C,0xAE,0xBC,0x75,0x2C,0x28,0x55,0xB1,0xAB,0x79,0xCB,0xB6,0x89,0x94,0x7D,0xF2};
+  static const char* ascii_fingerprint; // = "1E4E5C4E0D45BE5064D14AFD23096B8B";
+  static const uint8_t binary_fingerprint[16]; // = {0x1E,0x4E,0x5C,0x4E,0x0D,0x45,0xBE,0x50,0x64,0xD1,0x4A,0xFD,0x23,0x09,0x6B,0x8B};
 
-  Deletion() : super_column("") {
+  Deletion() : timestamp(0), super_column("") {
   }
 
   virtual ~Deletion() throw() {}
 
   static ::apache::thrift::reflection::local::TypeSpec* local_reflection;
 
-  Clock clock;
+  int64_t timestamp;
   std::string super_column;
   SlicePredicate predicate;
 
@@ -921,7 +877,7 @@ class Deletion {
 
   bool operator == (const Deletion & rhs) const
   {
-    if (!(clock == rhs.clock))
+    if (!(timestamp == rhs.timestamp))
       return false;
     if (__isset.super_column != rhs.__isset.super_column)
       return false;
@@ -944,9 +900,9 @@ class Deletion {
 
 };
 
-// {1:{1:i64;};2:opt-string;3:opt-{1:opt-list<string>;2:opt-{1:string;2:string;3:bool;4:i32;};};}
+// {1:i64;2:opt-string;3:opt-{1:opt-list<string>;2:opt-{1:string;2:string;3:bool;4:i32;};};}
 extern ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_0CAEBC752C2855B1AB79CBB689947DF2;
+trlo_typespec_cassandra_1E4E5C4E0D45BE5064D14AFD23096B8B;
 
 typedef struct _Mutation__isset {
   _Mutation__isset() : column_or_supercolumn(false), deletion(false) {}
@@ -957,8 +913,8 @@ typedef struct _Mutation__isset {
 class Mutation {
  public:
 
-  static const char* ascii_fingerprint; // = "54FF89DDBC55020F151B9654B1D21FC0";
-  static const uint8_t binary_fingerprint[16]; // = {0x54,0xFF,0x89,0xDD,0xBC,0x55,0x02,0x0F,0x15,0x1B,0x96,0x54,0xB1,0xD2,0x1F,0xC0};
+  static const char* ascii_fingerprint; // = "BFF60385C4A40853485F8D8CC62A8C25";
+  static const uint8_t binary_fingerprint[16]; // = {0xBF,0xF6,0x03,0x85,0xC4,0xA4,0x08,0x53,0x48,0x5F,0x8D,0x8C,0xC6,0x2A,0x8C,0x25};
 
   Mutation() {
   }
@@ -995,9 +951,9 @@ class Mutation {
 
 };
 
-// {1:opt-{1:opt-{1:string;2:string;3:{1:i64;};4:opt-i32;};2:opt-{1:string;2:list<{1:string;2:string;3:{1:i64;};4:opt-i32;}>;};};2:opt-{1:{1:i64;};2:opt-string;3:opt-{1:opt-list<string>;2:opt-{1:string;2:string;3:bool;4:i32;};};};}
+// {1:opt-{1:opt-{1:string;2:string;3:i64;4:opt-i32;};2:opt-{1:string;2:list<{1:string;2:string;3:i64;4:opt-i32;}>;};};2:opt-{1:i64;2:opt-string;3:opt-{1:opt-list<string>;2:opt-{1:string;2:string;3:bool;4:i32;};};};}
 extern ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_54FF89DDBC55020F151B9654B1D21FC0;
+trlo_typespec_cassandra_BFF60385C4A40853485F8D8CC62A8C25;
 
 
 class TokenRange {
@@ -1141,12 +1097,10 @@ extern ::apache::thrift::reflection::local::TypeSpec
 trlo_typespec_cassandra_A5AC27AF2178A2927C057F23978619E4;
 
 typedef struct _CfDef__isset {
-  _CfDef__isset() : column_type(false), clock_type(false), comparator_type(false), subcomparator_type(false), reconciler(false), comment(false), row_cache_size(false), preload_row_cache(false), key_cache_size(false), read_repair_chance(false), column_metadata(false), gc_grace_seconds(false) {}
+  _CfDef__isset() : column_type(false), comparator_type(false), subcomparator_type(false), comment(false), row_cache_size(false), preload_row_cache(false), key_cache_size(false), read_repair_chance(false), column_metadata(false), gc_grace_seconds(false), default_validation_class(false), id(false), min_compaction_threshold(false), max_compaction_threshold(false) {}
   bool column_type;
-  bool clock_type;
   bool comparator_type;
   bool subcomparator_type;
-  bool reconciler;
   bool comment;
   bool row_cache_size;
   bool preload_row_cache;
@@ -1154,15 +1108,19 @@ typedef struct _CfDef__isset {
   bool read_repair_chance;
   bool column_metadata;
   bool gc_grace_seconds;
+  bool default_validation_class;
+  bool id;
+  bool min_compaction_threshold;
+  bool max_compaction_threshold;
 } _CfDef__isset;
 
 class CfDef {
  public:
 
-  static const char* ascii_fingerprint; // = "272E8EC3FD84A810C93D0A7A08470759";
-  static const uint8_t binary_fingerprint[16]; // = {0x27,0x2E,0x8E,0xC3,0xFD,0x84,0xA8,0x10,0xC9,0x3D,0x0A,0x7A,0x08,0x47,0x07,0x59};
+  static const char* ascii_fingerprint; // = "F1977D780FBC587EC4DB0697ED036F3F";
+  static const uint8_t binary_fingerprint[16]; // = {0xF1,0x97,0x7D,0x78,0x0F,0xBC,0x58,0x7E,0xC4,0xDB,0x06,0x97,0xED,0x03,0x6F,0x3F};
 
-  CfDef() : keyspace(""), name(""), column_type("Standard"), clock_type("Timestamp"), comparator_type("BytesType"), subcomparator_type(""), reconciler(""), comment(""), row_cache_size(0), preload_row_cache(false), key_cache_size(200000), read_repair_chance(1), gc_grace_seconds(0) {
+  CfDef() : keyspace(""), name(""), column_type("Standard"), comparator_type("BytesType"), subcomparator_type(""), comment(""), row_cache_size(0), preload_row_cache(false), key_cache_size(200000), read_repair_chance(1), gc_grace_seconds(0), default_validation_class(""), id(0), min_compaction_threshold(0), max_compaction_threshold(0) {
   }
 
   virtual ~CfDef() throw() {}
@@ -1172,10 +1130,8 @@ class CfDef {
   std::string keyspace;
   std::string name;
   std::string column_type;
-  std::string clock_type;
   std::string comparator_type;
   std::string subcomparator_type;
-  std::string reconciler;
   std::string comment;
   double row_cache_size;
   bool preload_row_cache;
@@ -1183,6 +1139,10 @@ class CfDef {
   double read_repair_chance;
   std::vector<ColumnDef>  column_metadata;
   int32_t gc_grace_seconds;
+  std::string default_validation_class;
+  int32_t id;
+  int32_t min_compaction_threshold;
+  int32_t max_compaction_threshold;
 
   _CfDef__isset __isset;
 
@@ -1196,10 +1156,6 @@ class CfDef {
       return false;
     else if (__isset.column_type && !(column_type == rhs.column_type))
       return false;
-    if (__isset.clock_type != rhs.__isset.clock_type)
-      return false;
-    else if (__isset.clock_type && !(clock_type == rhs.clock_type))
-      return false;
     if (__isset.comparator_type != rhs.__isset.comparator_type)
       return false;
     else if (__isset.comparator_type && !(comparator_type == rhs.comparator_type))
@@ -1207,10 +1163,6 @@ class CfDef {
     if (__isset.subcomparator_type != rhs.__isset.subcomparator_type)
       return false;
     else if (__isset.subcomparator_type && !(subcomparator_type == rhs.subcomparator_type))
-      return false;
-    if (__isset.reconciler != rhs.__isset.reconciler)
-      return false;
-    else if (__isset.reconciler && !(reconciler == rhs.reconciler))
       return false;
     if (__isset.comment != rhs.__isset.comment)
       return false;
@@ -1240,6 +1192,22 @@ class CfDef {
       return false;
     else if (__isset.gc_grace_seconds && !(gc_grace_seconds == rhs.gc_grace_seconds))
       return false;
+    if (__isset.default_validation_class != rhs.__isset.default_validation_class)
+      return false;
+    else if (__isset.default_validation_class && !(default_validation_class == rhs.default_validation_class))
+      return false;
+    if (__isset.id != rhs.__isset.id)
+      return false;
+    else if (__isset.id && !(id == rhs.id))
+      return false;
+    if (__isset.min_compaction_threshold != rhs.__isset.min_compaction_threshold)
+      return false;
+    else if (__isset.min_compaction_threshold && !(min_compaction_threshold == rhs.min_compaction_threshold))
+      return false;
+    if (__isset.max_compaction_threshold != rhs.__isset.max_compaction_threshold)
+      return false;
+    else if (__isset.max_compaction_threshold && !(max_compaction_threshold == rhs.max_compaction_threshold))
+      return false;
     return true;
   }
   bool operator != (const CfDef &rhs) const {
@@ -1261,9 +1229,9 @@ trlo_typespec_cassandra_E8CD7DA078A86726031AD64F35F5A6C0;
 extern ::apache::thrift::reflection::local::TypeSpec
 trlo_typespec_cassandra_F1B1AE393A6FED8FC52C319F72A0646C;
 
-// {1:string;2:string;3:opt-string;4:opt-string;5:opt-string;6:opt-string;7:opt-string;8:opt-string;9:opt-double;10:opt-bool;11:opt-double;12:opt-double;13:opt-list<{1:string;2:string;3:opt-enum;4:opt-string;}>;14:opt-i32;}
+// {1:string;2:string;3:opt-string;5:opt-string;6:opt-string;8:opt-string;9:opt-double;10:opt-bool;11:opt-double;12:opt-double;13:opt-list<{1:string;2:string;3:opt-enum;4:opt-string;}>;14:opt-i32;15:opt-string;16:opt-i32;17:opt-i32;18:opt-i32;}
 extern ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_272E8EC3FD84A810C93D0A7A08470759;
+trlo_typespec_cassandra_F1977D780FBC587EC4DB0697ED036F3F;
 
 typedef struct _KsDef__isset {
   _KsDef__isset() : strategy_options(false) {}
@@ -1273,8 +1241,8 @@ typedef struct _KsDef__isset {
 class KsDef {
  public:
 
-  static const char* ascii_fingerprint; // = "11CF6A44E7A06AFA50BB8BD483E987DB";
-  static const uint8_t binary_fingerprint[16]; // = {0x11,0xCF,0x6A,0x44,0xE7,0xA0,0x6A,0xFA,0x50,0xBB,0x8B,0xD4,0x83,0xE9,0x87,0xDB};
+  static const char* ascii_fingerprint; // = "D3D90EC08AB74A646044B5E43403D43E";
+  static const uint8_t binary_fingerprint[16]; // = {0xD3,0xD9,0x0E,0xC0,0x8A,0xB7,0x4A,0x64,0x60,0x44,0xB5,0xE4,0x34,0x03,0xD4,0x3E};
 
   KsDef() : name(""), strategy_class(""), replication_factor(0) {
   }
@@ -1318,13 +1286,13 @@ class KsDef {
 
 };
 
-// list<{1:string;2:string;3:opt-string;4:opt-string;5:opt-string;6:opt-string;7:opt-string;8:opt-string;9:opt-double;10:opt-bool;11:opt-double;12:opt-double;13:opt-list<{1:string;2:string;3:opt-enum;4:opt-string;}>;14:opt-i32;}>
+// list<{1:string;2:string;3:opt-string;5:opt-string;6:opt-string;8:opt-string;9:opt-double;10:opt-bool;11:opt-double;12:opt-double;13:opt-list<{1:string;2:string;3:opt-enum;4:opt-string;}>;14:opt-i32;15:opt-string;16:opt-i32;17:opt-i32;18:opt-i32;}>
 extern ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_6C8B0B812D6142F9C0FF505793836FEC;
+trlo_typespec_cassandra_59A7AEBFB6339750D6AD54230D746729;
 
-// {1:string;2:string;3:opt-map<string,string>;4:i32;5:list<{1:string;2:string;3:opt-string;4:opt-string;5:opt-string;6:opt-string;7:opt-string;8:opt-string;9:opt-double;10:opt-bool;11:opt-double;12:opt-double;13:opt-list<{1:string;2:string;3:opt-enum;4:opt-string;}>;14:opt-i32;}>;}
+// {1:string;2:string;3:opt-map<string,string>;4:i32;5:list<{1:string;2:string;3:opt-string;5:opt-string;6:opt-string;8:opt-string;9:opt-double;10:opt-bool;11:opt-double;12:opt-double;13:opt-list<{1:string;2:string;3:opt-enum;4:opt-string;}>;14:opt-i32;15:opt-string;16:opt-i32;17:opt-i32;18:opt-i32;}>;}
 extern ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_11CF6A44E7A06AFA50BB8BD483E987DB;
+trlo_typespec_cassandra_D3D90EC08AB74A646044B5E43403D43E;
 
 }}} // namespace
 
