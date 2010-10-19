@@ -3,18 +3,28 @@ XClient *		T_PTROBJ
 AccessLevel		T_IV
 ConsistencyLevel	T_IV
 string			T_CPPSTRING
+int64_t			T_INT64
 AuthenticationRequest	T_THRIFT
-ColumnPath		T_THRIFT
+Column			T_THRIFT
+SuperColumn		T_THRIFT
 ColumnOrSuperColumn	T_THRIFT
+ColumnParent		T_THRIFT
+ColumnPath		T_THRIFT
+SlicePredicate		T_THRIFT
+vector<ColumnOrSuperColumn>  T_THRIFT
 
 INPUT
+T_INT64
+    assign_int64($var, $arg)
 T_CPPSTRING
     assign_string($var, $arg)
 T_THRIFT
     assign_thrift($var, $arg)
 
 OUTPUT
+T_INT64
+    sv_setint64($arg, $var)
 T_CPPSTRING
     sv_setpvn_mg($arg, $var.data(), $var.size());
 T_THRIFT
-    sv_setsv($arg, sv_2mortal(output_thrift($var)));
+    sv_setsv($arg, sv_2mortal(thrift_newsv($var)));
