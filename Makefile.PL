@@ -3,8 +3,9 @@ use warnings;
 use ExtUtils::MakeMaker;
 use Config;
 
+my $DEV = grep { $_ eq 'DEV' } @ARGV;
 my ($thrift) = map { /^THRIFT=(.+)/ } @ARGV;
-@ARGV = grep { !/^THRIFT=/ } @ARGV;
+@ARGV = grep { !/^(DEV\z|THRIFT=)/ } @ARGV;
 
 unless ($thrift) {
     ($thrift) = grep { -e "$_/include/thrift/Thrift.h" }
@@ -20,7 +21,9 @@ unless (-e $thrift_a) {
 
 my $cppflag;
 if ($Config{ccname} eq 'gcc') {
-    $cppflag = '-W -Wall -x c++ -o $*$(OBJ_EXT)';  # for release, I think I'll remove -W
+    $cppflag .= '-W -Wall -Wno-unused ' if $DEV;
+    $cppflag .= '-x c++ -o $*$(OBJ_EXT)';
+    $thrift_lib .= ' -lstdc++';
 }
 else {
     die "Edit me to know how to compile C++ to a target dir on your system, and mail a patch";
@@ -34,6 +37,7 @@ WriteMakefile(
     ($ExtUtils::MakeMaker::VERSION >= 6.3002
       ? ('LICENSE'=> 'perl')
       : ()),
+
     #DEFINE              => '-DPERL_EXT',
     XSOPT               => '-C++',
     macro               => { VERSION_MACRO => 'MODULE_VERSION' },
@@ -41,6 +45,8 @@ WriteMakefile(
     CCFLAGS             => qq[$cppflag],
     OBJECT              => qq[XCass.o gen-cpp/Cassandra.o gen-cpp/cassandra_constants.o gen-cpp/cassandra_types.o $thrift_a],
     LIBS                => qq[$thrift_lib],
+    $DEV ? (OPTIMIZE => '-g3') : (),
+
     PL_FILES            => {},
     PREREQ_PM => {
         'Test::More' => 0,
