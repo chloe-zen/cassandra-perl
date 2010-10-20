@@ -1,5 +1,5 @@
 TYPEMAP
-XClient *		T_PTROBJ
+XClient *		T_CASSANDRA
 AccessLevel		T_IV
 ConsistencyLevel	T_IV
 string			T_CPPSTRING
@@ -15,6 +15,14 @@ MutationMap		T_THRIFT
 vector<ColumnOrSuperColumn>  T_THRIFT
 
 INPUT
+T_CASSANDRA
+    if (sv_derived_from($arg, \"Cassandra\")) {
+        IV tmp = SvIV((SV*)SvRV($arg));
+        $var = INT2PTR($type,tmp);
+    }
+    else
+        Perl_croak(aTHX_ \"%s: %s is not of type Cassandra\",
+                   ${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]}, \"$var\")
 T_INT64
     assign_int64($var, $arg)
 T_CPPSTRING
@@ -23,6 +31,8 @@ T_THRIFT
     assign_thrift($var, $arg)
 
 OUTPUT
+T_CASSANDRA
+    sv_setref_pv($arg, \"Cassandra\", (void*)$var);
 T_INT64
     sv_setint64($arg, $var)
 T_CPPSTRING
