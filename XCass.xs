@@ -293,11 +293,13 @@ class AutoTimestamp {
     AutoTimestamp(pTHX_ SV *sv) { clear(); set(aTHX_ sv); }
 
     void set(pTHX_ SV *sv) {
+        if (!sv)
+            return;
         SvGETMAGIC(sv);
-        if (SvOK(sv)) {
-            pl_assign_int64_nomg(aTHX_ _ts, sv);
-            _isset = true;
-        }
+        if (!SvOK(sv))
+            return;
+        pl_assign_int64_nomg(aTHX_ _ts, sv);
+        _isset = true;
     }
 
     void clear() {
@@ -451,6 +453,12 @@ static void _hv_store_thrift(pTHX_ HV *hv, const Column &col) {
 static void _hv_store_thrift(pTHX_ HV *hv, const SuperColumn &sc) {
     hv_store(hv, sc.name.data(),  sc.name.size(),  thrift_newsv(sc.columns), 0);
 }
+static void _hv_store_thrift(pTHX_ HV *hv, const ColumnOrSuperColumn &cosc) {
+    if (cosc.__isset.column)
+        _hv_store_thrift(aTHX_ hv, cosc.column);
+    if (cosc.__isset.super_column)
+        _hv_store_thrift(aTHX_ hv, cosc.super_column);
+}
 template <class T>
 static SV *_thrift_newhv(pTHX_ const T &t) {
     HV *hv = newHV();
@@ -487,6 +495,7 @@ static SV *pl_thrift_newsv(pTHX_ const ColumnOrSuperColumn &cos) {
 
 static void pl_assign_slicerange_maybe(pTHX_ SliceRange &out_sr, bool &isset, HV *src_hv) {
     SV **svp;
+
     if ((svp = hv_fetchs(src_hv, "start", 0))) {
         assign_string(out_sr.start, *svp);
         isset = true;
@@ -501,7 +510,7 @@ static void pl_assign_slicerange_maybe(pTHX_ SliceRange &out_sr, bool &isset, HV
         isset = true;
     }
     if ((svp = hv_fetchs(src_hv, "count", 0))) {
-        out_sr.start = SvIV(*svp);
+        out_sr.count = SvIV(*svp);
         isset = true;
     }
 }
@@ -719,10 +728,11 @@ XClient::set_keyspace(string keyspace)
 SV *
 XClient::_get(string key, ColumnPath column_path, ConsistencyLevel consistency_level = ONE)
   CODE:
+    RETVAL = &PL_sv_undef;
     TRY {
         ColumnOrSuperColumn ret;
         THIS->get(ret, key, column_path, consistency_level);
-        RETVAL = thrift_newsv(ret);
+        RETVAL = ret.__isset.column ? colval_newsv(ret.column) : thrift_newsv(ret.super_column.columns);
     }
     catch (const NotFoundException &) {
         RETVAL = &PL_sv_undef;
@@ -736,15 +746,21 @@ XClient::_get(string key, ColumnPath column_path, ConsistencyLevel consistency_l
 SV *
 XClient::_get_slice(string key, ColumnParent column_parent, SlicePredicate predicate, ConsistencyLevel consistency_level = ONE)
   CODE:
+    HV *hv = newHV();
     TRY {
         vector<ColumnOrSuperColumn> ret;
         THIS->get_slice(ret, key, column_parent, predicate, consistency_level);
-        RETVAL = thrift_newsv(ret);
+        for (size_t i = 0; i < ret.size(); ++i)
+            _hv_store_thrift(aTHX_ hv, ret[i]);
+        RETVAL = newRV_noinc((SV*)hv);
     }
     catch (const NotFoundException &) {
         RETVAL = &PL_sv_undef;
+        SvREFCNT_dec(hv);
     }
-    CATCH_GETTING;
+    CATCH_GETTING_WITH(
+        SvREFCNT_dec(hv);
+    );
   OUTPUT:
     RETVAL
 
@@ -760,7 +776,7 @@ XClient::_insert(string key, ColumnParent column_parent, Column column, Consiste
 # virtual void remove(const std::string& key, const ColumnPath& column_path, const int64_t timestamp, const ConsistencyLevel consistency_level) = 0;
 
 void
-XClient::_remove(string key, ColumnPath column_path, SV *timestamp_sv, ConsistencyLevel consistency_level = ZERO)
+XClient::_remove(string key, ColumnPath column_path, SV *timestamp_sv = NULL, ConsistencyLevel consistency_level = ZERO)
   CODE:
     TRY {
       int64_t ts = AutoTimestamp(aTHX_ timestamp_sv).get();
