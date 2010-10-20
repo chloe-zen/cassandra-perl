@@ -522,8 +522,12 @@ static void pl_assign_thrift(pTHX_ SliceRange &out_sr, SV *src_sv) {
 
 static void pl_assign_thrift(pTHX_ SlicePredicate &out_sp, SV *src_sv) {
     SvGETMAGIC(src_sv);
-    if (!SvOK(src_sv))
-        return; // that's OK -- undef means no range
+    if (!SvOK(src_sv)) {
+        // undef means a range that covers everything 
+        out_sp.__isset.slice_range = true;
+        return;
+    }
+
     if (!(SvROK(src_sv) && SvTYPE(SvRV(src_sv)) == SVt_PVHV))
         throw bad_conversion("expected undef or hashref for slice predicate");
     HV *hv = (HV*)SvRV(src_sv);
@@ -532,10 +536,10 @@ static void pl_assign_thrift(pTHX_ SlicePredicate &out_sp, SV *src_sv) {
 
     SV **svp;
     if ((svp = hv_fetchs(hv, "columns", 0))) {
-        if (SvTYPE(*svp) != SVt_PVAV)
-            throw bad_conversion("expected array for slice predicate 'columns'");
+        if (!(SvROK(*svp) && SvTYPE(SvRV(*svp)) != SVt_PVAV))
+            throw bad_conversion("expected arrayref for slice predicate 'columns'");
         out_sp.__isset.column_names = true;
-        AV *av = (AV *)*svp;
+        AV *av = (AV *)SvRV(*svp);
         I32 amax = av_len(av);
         for (I32 i = 0; i <= amax; ++i)
             out_sp.column_names.push_back(make_string(av_fetch_safe(av, i)));
@@ -660,14 +664,14 @@ XClient::_new(I32 string_limit = 0, I32 container_limit = 0)
                                             true)); // strict_write
 
     RETVAL = new XClient(proto);
-    printf("CREATED %p\n", RETVAL);
+    //printf("CREATED %p\n", RETVAL);
   OUTPUT:
     RETVAL
 
 void
 XClient::DESTROY()
   CODE:
-    printf("DESTROYING %p\n", THIS);
+    //printf("DESTROYING %p\n", THIS);
     delete THIS;
 
 
@@ -730,7 +734,7 @@ XClient::_get(string key, ColumnPath column_path, ConsistencyLevel consistency_l
 # virtual void get_slice(std::vector<ColumnOrSuperColumn> & _return, const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level) = 0;
 
 SV *
-XClient::_get_slice(string key, ColumnParent column_parent, SlicePredicate predicate, ConsistencyLevel consistency_level = ZERO)
+XClient::_get_slice(string key, ColumnParent column_parent, SlicePredicate predicate, ConsistencyLevel consistency_level = ONE)
   CODE:
     TRY {
         vector<ColumnOrSuperColumn> ret;
