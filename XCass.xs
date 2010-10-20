@@ -152,14 +152,14 @@ static SV *pl_hv_fetch_safe(pTHX_ HV *hv, const char *key, I32 klen) {
     return svp ? *svp : &PL_sv_undef;
 }
 #define hv_fetch_safe(hv,key,klen)              pl_hv_fetch_safe(aTHX_ hv,key,klen)
-#define hv_fetchs_safe(hv,key)      ("x"key"x", pl_hv_fetch_safe(aTHX_ hv,key,sizeof(key)-1))
+#define hv_fetchs_safe(hv,key)      ((void)("x"key"x"), pl_hv_fetch_safe(aTHX_ hv,key,sizeof(key)-1))
 
 // safe strings
 
 static string pl_make_string(pTHX_ SV *sv) {
     STRLEN tn;
     const char *tp = SvPV(sv, tn);
-    string(tp, tn);
+    return string(tp, tn);
 }
 static void pl_assign_string(pTHX_ string &s, SV *sv) {
     STRLEN tn;
@@ -264,30 +264,81 @@ static void pl_assign_thrift(pTHX_ ColumnParent &parent, SV *src_sv) {
 #define assign_colval(col,src_sv)  pl_assign_colval(aTHX_ col,src_sv)
 #define colval_newsv(col)          pl_colval_newsv(aTHX_ col)
 
+class AutoTimestamp {
+    int64_t _ts;
+    bool _isset;
+  public:
+    AutoTimestamp() : _ts(0), _isset(0) {}
+
+    void set(pTHX_ SV *sv) {
+        assign_int64(_ts, sv);
+        _isset = true;
+    }
+
+    void clear() {
+        _ts = 0;
+        _isset = false;
+    }
+
+    int64_t get() {
+        if (!_isset) {
+#ifdef HAS_GETTIMEOFDAY
+            timeval tv;
+            if (gettimeofday(&tv, 0))
+                throw bad_conversion("gettimeofday() failed, should not happen");
+            _ts = (int64_t)tv.tv_sec * 1000000 + tv.tv_usec;
+#else  // !GTOD
+            time_t t;
+            if (time(&t) == -1)
+                throw bad_conversion("time() failed, should not happen");
+            _ts = (int64_t)t * 1000000;
+#endif // GTOD
+            _isset = true;
+        }
+        return _ts;
+    }
+};
+
 static void pl_assign_colval(pTHX_ Column &col, SV *src_sv) {
-    SV **svp;
+    SV **val_svp;
+    SV **ts_svp = 0;
+    SV **ttl_svp = 0;
 
     SvGETMAGIC(src_sv);
     if (SvROK(src_sv) && SvTYPE(SvRV(src_sv)) == SVt_PVAV) {
         AV *av = (AV*)SvRV(src_sv);
-        I32 ix = 0;
-        assign_string(col.value, av_fetch_safe(av, ix++));
-        if ((svp = av_fetch(av, ix++, 0))) {
-            col.ttl = SvIV(*svp);
-            col.__isset.ttl = true;
-        }
+        val_svp = av_fetch(av, 0, 0);
+        ts_svp  = av_fetch(av, 1, 0);
+        ttl_svp = av_fetch(av, 2, 0);
     }
+
+// We can only use hashes for columns if we solve how to tell the difference between columns and supercolums
+#if 0
     else if (SvROK(src_sv) && SvTYPE(SvRV(src_sv)) == SVt_PVHV) {
-        HV *src_hv = (HV*)SvRV(src_sv);
-        if ((svp = hv_fetchs(src_hv, "value", 0)))
-            assign_string(col.value, *svp);
-        if ((svp = hv_fetchs(src_hv, "ttl", 0))) {
-            col.ttl = SvIV(*svp);
-            col.__isset.ttl = true;
-        }
+        HV *hv = (HV*)SvRV(src_sv);
+        val_svp = hv_fetchs(hv, "val", 0);
+        ts_svp  = hv_fetchs(hv, "ts",  0);
+        ttl_svp = hv_fetchs(hv, "ttl", 0);
     }
+#endif
+
     else {
-        assign_string(col.value, src_sv);
+        val_svp = &src_sv;
+    }
+
+    if (!val_svp)
+        throw bad_conversion("column value missing");
+    assign_string(col.value, *val_svp);
+
+    /// TODO: Share a default for a whole mutation
+    AutoTimestamp ats;
+    if (ts_svp)
+        ats.set(aTHX_ *ts_svp);
+    col.timestamp = ats.get();
+
+    if (ttl_svp) {
+        col.ttl = SvIV(*ttl_svp);
+        col.__isset.ttl = true;
     }
 }
 
@@ -297,48 +348,48 @@ static SV *pl_colval_newsv(pTHX_ const Column &col) {
     av_push(av, newSVint64(col.timestamp));
     if (col.__isset.ttl)
         av_push(av, newSViv(col.ttl));
+    return newRV_noinc((SV*)av);
 }
+
 
 // SuperColumn value (no name): vector<Column> as HV
 
 static void pl_assign_thrift(pTHX_ vector<Column> &cols, SV *src_sv) {
     SvGETMAGIC(src_sv);
-    if (SvROK(src_sv) && SvTYPE(SvRV(src_sv)) == SVt_PVHV) {
-        HV *hv = (HV *)src_sv;
-        hv_iterinit(hv);
-
-        if (! SvTIED_mg((SV*)hv, PERL_MAGIC_tied))
-            cols.resize(HvKEYS(hv));
-
-        SV *valsv;
-        char *kp;
-        I32 klen;
-        size_t i;
-        for (i = 0; (valsv = hv_iternextsv(hv, &kp, &klen)); ++i) {
-            cols[i].name.assign(kp, klen);
-            assign_colval(cols[i], valsv);
-        }
-
-        cols.resize(i);  // in case HvKEYS() lied
-    }
-    else
+    if (!(SvROK(src_sv) && SvTYPE(SvRV(src_sv)) == SVt_PVHV))
         throw bad_conversion("expected a hashref for columns");
+    HV *hv = (HV *)src_sv;
+    hv_iterinit(hv);
+
+    if (! SvTIED_mg((SV*)hv, PERL_MAGIC_tied))
+        cols.resize(HvKEYS(hv));
+
+    SV *valsv;
+    char *kp;
+    I32 klen;
+    size_t i;
+    for (i = 0; (valsv = hv_iternextsv(hv, &kp, &klen)); ++i) {
+        cols[i].name.assign(kp, klen);
+        assign_colval(cols[i], valsv);
+    }
+
+    cols.resize(i);  // in case HvKEYS() lied
 }
 
 // forward declaration:
 static void _hv_store_thrift(pTHX_ HV *hv, const Column &col);
 
 static SV *pl_thrift_newsv(pTHX_ const vector<Column> &cols) {
-    HV *cols_hv = newHV();
+    HV *hv = newHV();
     try {
         for (size_t i = 0; i < cols.size(); ++i)
-            _hv_store_thrift(aTHX_ cols_hv, cols[i]);
+            _hv_store_thrift(aTHX_ hv, cols[i]);
     }
     catch (...) {
-        SvREFCNT_dec(cols_hv);
+        SvREFCNT_dec(hv);
         throw;
     }
-    return (SV*)cols_hv;
+    return newRV_noinc((SV*)hv);
 }
 
 
@@ -376,7 +427,7 @@ static void _hv_store_thrift(pTHX_ HV *hv, const SuperColumn &sc) {
     hv_store(hv, sc.name.data(),  sc.name.size(),  thrift_newsv(sc.columns), 0);
 }
 template <class T>
-static HV *_thrift_newhv(pTHX_ const T &t) {
+static SV *_thrift_newhv(pTHX_ const T &t) {
     HV *hv = newHV();
     try {
         _hv_store_thrift(aTHX_ hv, t);
@@ -385,13 +436,13 @@ static HV *_thrift_newhv(pTHX_ const T &t) {
         SvREFCNT_dec(hv);
         throw;
     }
-    return hv;
+    return newRV_noinc((SV*)hv);
 }
 static SV *pl_thrift_newsv(pTHX_ const Column &col) {
-    (SV*)_thrift_newhv(aTHX_ col);
+    return _thrift_newhv(aTHX_ col);
 }
 static SV *pl_thrift_newsv(pTHX_ const SuperColumn &sc) {
-    (SV*)_thrift_newhv(aTHX_ sc);
+    return _thrift_newhv(aTHX_ sc);
 }
 
 
@@ -480,7 +531,7 @@ SV *pl_thrift_newsv(pTHX_ const vector<T> &v) {
         SvREFCNT_dec(av);
         throw;
     }
-    return (SV*)av;
+    return newRV_noinc((SV*)av);
 }
 
 
