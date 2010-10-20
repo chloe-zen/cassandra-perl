@@ -1,6 +1,7 @@
 package Cassandra;
 use warnings;
 use strict;
+require Carp;  # called from XS
 
 =head1 NAME
 
