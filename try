@@ -36,11 +36,13 @@ $foo = $c->_get_slice('foo', 'Standard1', { start => 'n', finish => 'a', count =
 show 'N-A LIMIT 1', $foo;
 
 
-for (qw( zim dib membrane )) {
-    $c->_remove('foo', ['Standard1', undef, $_]);
-}
+$c->_remove('foo', ['Standard1', undef, 'dib']);
 $foo = $c->_get_slice('foo', 'Standard1', undef);
-show 'ALL AFTER REMOVE', $foo;
+show 'ALL AFTER REMOVING DIB', $foo;
+
+$c->_remove('foo', 'Standard1');
+$foo = $c->_get_slice('foo', 'Standard1', undef);
+show 'ALL AFTER CLEARING', $foo;
 
 $foo = $c->_get_slice('blargh', 'Standard1', undef);
 show 'BLARGH, NEVER SET', $foo;
