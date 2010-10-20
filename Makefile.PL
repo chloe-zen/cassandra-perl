@@ -20,7 +20,7 @@ unless (-e $thrift_a) {
 
 my $cppflag;
 if ($Config{ccname} eq 'gcc') {
-    $cppflag = '-x c++ -o $*$(OBJ_EXT)';
+    $cppflag = '-W -Wall -x c++ -o $*$(OBJ_EXT)';  # for release, I think I'll remove -W
 }
 else {
     die "Edit me to know how to compile C++ to a target dir on your system, and mail a patch";
