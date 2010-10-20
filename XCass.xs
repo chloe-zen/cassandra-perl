@@ -104,8 +104,7 @@ namespace {
 #define sv_setint64(sv,i)       pl_sv_setint64( aTHX_ sv,i)
 #define newSVint64(i)           pl_newSVint64( aTHX_ i)
 
-static void pl_assign_int64(pTHX_ int64_t &out_i, SV *sv) {
-    SvGETMAGIC(sv);
+static void pl_assign_int64_nomg(pTHX_ int64_t &out_i, SV *sv) {
 #if IVSIZE > 4
     if (SvIOK(sv))
         out_i = SvIOK_UV(sv) ? (int64_t)SvUVX(sv) : (int64_t)SvIVX(sv);
@@ -119,6 +118,10 @@ static void pl_assign_int64(pTHX_ int64_t &out_i, SV *sv) {
         if (*e)
             warn("invalid numeric characters in int64: %_", sv);
     }
+}
+static void pl_assign_int64(pTHX_ int64_t &out_i, SV *sv) {
+    SvGETMAGIC(sv);
+    pl_assign_int64_nomg(aTHX_ out_i, sv);
 }
 
 static void pl_sv_setint64(pTHX_ SV *sv, int64_t i) {
@@ -268,11 +271,15 @@ class AutoTimestamp {
     int64_t _ts;
     bool _isset;
   public:
-    AutoTimestamp() : _ts(0), _isset(0) {}
+    AutoTimestamp()             { clear(); }
+    AutoTimestamp(pTHX_ SV *sv) { clear(); set(aTHX_ sv); }
 
     void set(pTHX_ SV *sv) {
-        assign_int64(_ts, sv);
-        _isset = true;
+        SvGETMAGIC(sv);
+        if (SvOK(sv)) {
+            pl_assign_int64_nomg(aTHX_ _ts, sv);
+            _isset = true;
+        }
     }
 
     void clear() {
@@ -705,10 +712,11 @@ XClient::_insert(string key, ColumnParent column_parent, Column column, Consiste
 # virtual void remove(const std::string& key, const ColumnPath& column_path, const int64_t timestamp, const ConsistencyLevel consistency_level) = 0;
 
 void
-XClient::_remove(string key, ColumnPath column_path, int64_t timestamp, ConsistencyLevel consistency_level)
+XClient::_remove(string key, ColumnPath column_path, SV *timestamp_sv, ConsistencyLevel consistency_level)
   CODE:
     TRY {
-      THIS->remove(key, column_path, timestamp, consistency_level);
+      int64_t ts = AutoTimestamp(aTHX_ timestamp_sv).get();
+      THIS->remove(key, column_path, ts, consistency_level);
     } CATCH;
 
 # virtual void batch_mutate(const std::map<std::string, std::map<std::string, std::vector<Mutation> > > & mutation_map, const ConsistencyLevel consistency_level) = 0;
