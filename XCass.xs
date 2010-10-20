@@ -1,3 +1,4 @@
+/* -*- mode:c++ -*- */
 /* Copyright (c) 2010 Topsy Labs.
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of either: the GNU General Public License as published
@@ -55,12 +56,24 @@ using namespace apache::thrift;  // assuming no conflict
       char croak_msg[256]; \
       try
 
-#define CATCH   CATCH_WITH()
-#define CATCH_WITH(RECOVERY) \
-      catch (const std::exception &e) {                         \
-        kaboom = true;                                          \
-        snprintf(croak_msg, sizeof croak_msg, "%s", e.what());  \
-      }                                                         \
+#define _CATCH_TYPE(TYPE,MSG) \
+       catch (const TYPE &e) {                                  \
+           kaboom = true;                                       \
+           snprintf(croak_msg, sizeof croak_msg, "%s", MSG);    \
+       }
+
+#define CATCH_GETTING   CATCH_GETTING_WITH()
+#define CATCH_GETTING_WITH(RECOVERY) \
+       catch (const InvalidRequestException &e) {               \
+           kaboom = true;                                       \
+           snprintf(croak_msg, sizeof croak_msg,                \
+                    "Invalid request: %s", e.why.c_str());      \
+       }                                                        \
+      _CATCH_TYPE(UnavailableException,    "Unavailable")       \
+      _CATCH_TYPE(TimedOutException,       "Timed out")         \
+      _CATCH_TYPE(AuthenticationException, "Not authenticated") \
+      _CATCH_TYPE(AuthorizationException,  "Not authorized")    \
+      _CATCH_TYPE(std::exception,          e.what())            \
       catch (...) {                                             \
         kaboom = true;                                          \
         strcpy(croak_msg, "Unknown exception");                 \
@@ -79,6 +92,11 @@ using namespace apache::thrift;  // assuming no conflict
         Perl_croak(aTHX_ "BUG: confess() did not die! %s", croak_msg); \
       }                                                         \
     } while (0)
+
+#define CATCH   CATCH_WITH()
+#define CATCH_WITH(RECOVERY) \
+      _CATCH_TYPE(NotFoundException,       "Not found")         \
+      CATCH_GETTING_WITH(RECOVERY)
 
 namespace {
     class bad_conversion : public exception {
@@ -613,7 +631,7 @@ static transport::TSocket *client_socket_transport(CassandraClient *cl) {
     transport::TTransport *t = dynamic_cast<transport::TTransport *>(cl->getOutputProtocol()->getTransport().get());
     transport::TUnderlyingTransport *u;
     while ((u = dynamic_cast<transport::TUnderlyingTransport *>(t)))
-        t = u;
+        t = u->getUnderlyingTransport().get();
     return dynamic_cast<transport::TSocket *>(t);
 }
 
@@ -629,34 +647,48 @@ static XClient *
 XClient::_new(I32 string_limit = 0, I32 container_limit = 0)
   CODE:
     boost::shared_ptr<transport::TSocket>
-        trans(new transport::TSocket);
+        socket_trans(new transport::TSocket);
+
+    boost::shared_ptr<transport::TFramedTransport>
+        framed_trans(new transport::TFramedTransport(socket_trans));
 
     boost::shared_ptr<protocol::TProtocol>
-        proto(new protocol::TBinaryProtocol(trans,
+        proto(new protocol::TBinaryProtocol(framed_trans,
                                             string_limit,
                                             container_limit,
                                             true,   // strict_read
                                             true)); // strict_write
 
     RETVAL = new XClient(proto);
+    printf("CREATED %p\n", RETVAL);
   OUTPUT:
     RETVAL
+
+void
+XClient::DESTROY()
+  CODE:
+    printf("DESTROYING %p\n", THIS);
+    delete THIS;
 
 
 void
 XClient::connect(string host, int port)
   CODE:
-    transport::TSocket *tsock = client_socket_transport(THIS);
-    tsock->close();
-    tsock->setHost(host);
-    tsock->setPort(port);
+    TRY {
+      transport::TSocket *tsock = client_socket_transport(THIS);
+      tsock->close();
+      tsock->setHost(host);
+      tsock->setPort(port);
+      tsock->open();
+    } CATCH;
 
 void
 XClient::disconnect()
   CODE:
-    transport::TSocket *tsock = client_socket_transport(THIS);
-    tsock->close();
-
+    TRY {
+      transport::TSocket *tsock = client_socket_transport(THIS);
+      tsock->close();
+    } CATCH;
 
 # virtual AccessLevel login(const AuthenticationRequest& auth_request) = 0;
 
@@ -680,30 +712,42 @@ XClient::set_keyspace(string keyspace)
 
 # virtual void get(ColumnOrSuperColumn& _return, const std::string& key, const ColumnPath& column_path, const ConsistencyLevel consistency_level) = 0;
 
-ColumnOrSuperColumn
-XClient::_get(string key, ColumnPath column_path, ConsistencyLevel consistency_level)
+SV *
+XClient::_get(string key, ColumnPath column_path, ConsistencyLevel consistency_level = ONE)
   CODE:
     TRY {
-      THIS->get(RETVAL, key, column_path, consistency_level);
-    } CATCH;
+        ColumnOrSuperColumn ret;
+        THIS->get(ret, key, column_path, consistency_level);
+        RETVAL = thrift_newsv(ret);
+    }
+    catch (const NotFoundException &) {
+        RETVAL = &PL_sv_undef;
+    }
+    CATCH_GETTING;
   OUTPUT:
     RETVAL
 
 # virtual void get_slice(std::vector<ColumnOrSuperColumn> & _return, const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level) = 0;
 
-vector<ColumnOrSuperColumn>
-XClient::_get_slice(string key, ColumnParent column_parent, SlicePredicate predicate, ConsistencyLevel consistency_level)
+SV *
+XClient::_get_slice(string key, ColumnParent column_parent, SlicePredicate predicate, ConsistencyLevel consistency_level = ZERO)
   CODE:
     TRY {
-      THIS->get_slice(RETVAL, key, column_parent, predicate, consistency_level);
-    } CATCH;
+        vector<ColumnOrSuperColumn> ret;
+        THIS->get_slice(ret, key, column_parent, predicate, consistency_level);
+        RETVAL = thrift_newsv(ret);
+    }
+    catch (const NotFoundException &) {
+        RETVAL = &PL_sv_undef;
+    }
+    CATCH_GETTING;
   OUTPUT:
     RETVAL
 
 # virtual void insert(const std::string& key, const ColumnParent& column_parent, const Column& column, const ConsistencyLevel consistency_level) = 0;
 
 void
-XClient::_insert(string key, ColumnParent column_parent, Column column, ConsistencyLevel consistency_level)
+XClient::_insert(string key, ColumnParent column_parent, Column column, ConsistencyLevel consistency_level = ZERO)
   CODE:
     TRY {
       THIS->insert(key, column_parent, column, consistency_level);
@@ -712,7 +756,7 @@ XClient::_insert(string key, ColumnParent column_parent, Column column, Consiste
 # virtual void remove(const std::string& key, const ColumnPath& column_path, const int64_t timestamp, const ConsistencyLevel consistency_level) = 0;
 
 void
-XClient::_remove(string key, ColumnPath column_path, SV *timestamp_sv, ConsistencyLevel consistency_level)
+XClient::_remove(string key, ColumnPath column_path, SV *timestamp_sv, ConsistencyLevel consistency_level = ZERO)
   CODE:
     TRY {
       int64_t ts = AutoTimestamp(aTHX_ timestamp_sv).get();
@@ -722,7 +766,7 @@ XClient::_remove(string key, ColumnPath column_path, SV *timestamp_sv, Consisten
 # virtual void batch_mutate(const std::map<std::string, std::map<std::string, std::vector<Mutation> > > & mutation_map, const ConsistencyLevel consistency_level) = 0;
 
 void
-XClient::batch_mutate(MutationMap mutation_map, ConsistencyLevel consistency_level)
+XClient::batch_mutate(MutationMap mutation_map, ConsistencyLevel consistency_level = ZERO)
   CODE:
     TRY {
       THIS->batch_mutate(mutation_map, consistency_level);
