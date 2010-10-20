@@ -1,0 +1,46 @@
+#!/usr/bin/perl -w
+use strict;
+use warnings;
+use blib;
+use Cassandra;
+use YAML;
+
+
+my $c = Cassandra->_new;
+$c->connect('localhost', 9160);
+$c->set_keyspace('Keyspace1');
+
+sub show {
+    print "$_[0]:\n", Dump($_[1]), "\n";
+}
+
+my $foo = $c->_get_slice('foo', 'Standard1', undef);
+show 'ALL AT START', $foo;
+
+
+$c->_insert('foo', 'Standard1' => { zim => 'Irken' });
+$c->_insert('foo', 'Standard1' => { dib => 'Believer' });
+$c->_insert('foo', 'Standard1' => { membrane => 'Professor' });
+$foo = $c->_get_slice('foo', 'Standard1', undef);
+show 'ALL AFTER INSERT', $foo;
+
+for (qw( zim dib membrane )) {
+    $foo = $c->_get('foo', ['Standard1', undef, $_]);
+    show $_, $foo;
+}
+
+$foo = $c->_get_slice('foo', 'Standard1', { start => 'a', finish => 'n', count => 1 });
+show 'A-N LIMIT 1', $foo;
+
+$foo = $c->_get_slice('foo', 'Standard1', { start => 'n', finish => 'a', count => 1, reversed => 1 });
+show 'N-A LIMIT 1', $foo;
+
+
+for (qw( zim dib membrane )) {
+    $c->_remove('foo', ['Standard1', undef, $_]);
+}
+$foo = $c->_get_slice('foo', 'Standard1', undef);
+show 'ALL AFTER REMOVE', $foo;
+
+$foo = $c->_get_slice('blargh', 'Standard1', undef);
+show 'BLARGH, NEVER SET', $foo;
