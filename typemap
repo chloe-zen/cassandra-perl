@@ -1,7 +1,7 @@
 TYPEMAP
 XClient *		T_CASSANDRA
-AccessLevel		T_IV
-ConsistencyLevel	T_IV
+XAccessLevel		T_IV
+XConsistencyLevel	T_IV
 string			T_CPPSTRING
 int64_t			T_INT64
 AuthenticationRequest	T_THRIFT

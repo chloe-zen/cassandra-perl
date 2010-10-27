@@ -652,6 +652,7 @@ static transport::TSocket *client_socket_transport(CassandraClient *cl) {
 //================================================================
 
 typedef CassandraClient XClient;
+typedef ConsistencyLevel::type XConsistencyLevel;
 
 
 MODULE=Cassandra	PACKAGE=Cassandra
@@ -703,7 +704,7 @@ XClient::disconnect()
       tsock->close();
     } CATCH;
 
-# virtual AccessLevel login(const AuthenticationRequest& auth_request) = 0;
+# virtual void login(const AuthenticationRequest& auth_request) = 0;
 
 void
 XClient::login(AuthenticationRequest authreq)
@@ -723,10 +724,10 @@ XClient::set_keyspace(string keyspace)
     } CATCH;
 
 
-# virtual void get(ColumnOrSuperColumn& _return, const std::string& key, const ColumnPath& column_path, const ConsistencyLevel consistency_level) = 0;
+# virtual void get(ColumnOrSuperColumn& _return, const std::string& key, const ColumnPath& column_path, const ConsistencyLevel::type consistency_level) = 0;
 
 SV *
-XClient::_get(string key, ColumnPath column_path, ConsistencyLevel consistency_level = ONE)
+XClient::_get(string key, ColumnPath column_path, XConsistencyLevel consistency_level = ConsistencyLevel::ONE)
   CODE:
     RETVAL = &PL_sv_undef;
     TRY {
@@ -741,10 +742,10 @@ XClient::_get(string key, ColumnPath column_path, ConsistencyLevel consistency_l
   OUTPUT:
     RETVAL
 
-# virtual void get_slice(std::vector<ColumnOrSuperColumn> & _return, const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level) = 0;
+# virtual void get_slice(std::vector<ColumnOrSuperColumn> & _return, const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level) = 0;
 
 SV *
-XClient::_get_slice(string key, ColumnParent column_parent, SlicePredicate predicate, ConsistencyLevel consistency_level = ONE)
+XClient::_get_slice(string key, ColumnParent column_parent, SlicePredicate predicate, XConsistencyLevel consistency_level = ConsistencyLevel::ONE)
   CODE:
     HV *hv = newHV();
     TRY {
@@ -764,29 +765,29 @@ XClient::_get_slice(string key, ColumnParent column_parent, SlicePredicate predi
   OUTPUT:
     RETVAL
 
-# virtual void insert(const std::string& key, const ColumnParent& column_parent, const Column& column, const ConsistencyLevel consistency_level) = 0;
+# virtual void insert(const std::string& key, const ColumnParent& column_parent, const Column& column, const ConsistencyLevel::type consistency_level) = 0;
 
 void
-XClient::_insert(string key, ColumnParent column_parent, Column column, ConsistencyLevel consistency_level = ZERO)
+XClient::_insert(string key, ColumnParent column_parent, Column column, XConsistencyLevel consistency_level = ConsistencyLevel::ANY)
   CODE:
     TRY {
       THIS->insert(key, column_parent, column, consistency_level);
     } CATCH;
 
-# virtual void remove(const std::string& key, const ColumnPath& column_path, const int64_t timestamp, const ConsistencyLevel consistency_level) = 0;
+# virtual void remove(const std::string& key, const ColumnPath& column_path, const int64_t timestamp, const ConsistencyLevel::type consistency_level) = 0;
 
 void
-XClient::_remove(string key, ColumnPath column_path, SV *timestamp_sv = NULL, ConsistencyLevel consistency_level = ZERO)
+XClient::_remove(string key, ColumnPath column_path, SV *timestamp_sv = NULL, XConsistencyLevel consistency_level = ConsistencyLevel::ANY)
   CODE:
     TRY {
       int64_t ts = AutoTimestamp(aTHX_ timestamp_sv).get();
       THIS->remove(key, column_path, ts, consistency_level);
     } CATCH;
 
-# virtual void batch_mutate(const std::map<std::string, std::map<std::string, std::vector<Mutation> > > & mutation_map, const ConsistencyLevel consistency_level) = 0;
+# virtual void batch_mutate(const std::map<std::string, std::map<std::string, std::vector<Mutation> > > & mutation_map, const ConsistencyLevel::type consistency_level) = 0;
 
 void
-XClient::batch_mutate(MutationMap mutation_map, ConsistencyLevel consistency_level = ZERO)
+XClient::batch_mutate(MutationMap mutation_map, XConsistencyLevel consistency_level = ConsistencyLevel::ANY)
   CODE:
     TRY {
       THIS->batch_mutate(mutation_map, consistency_level);
@@ -795,14 +796,14 @@ XClient::batch_mutate(MutationMap mutation_map, ConsistencyLevel consistency_lev
 =for never
 
 
-  virtual int32_t get_count(const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level) = 0;
-  virtual void multiget_slice(std::map<std::string, std::vector<ColumnOrSuperColumn> > & _return, const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level) = 0;
-  virtual void multiget_count(std::map<std::string, int32_t> & _return, const std::string& keyspace, const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level) = 0;
-  virtual void get_range_slices(std::vector<KeySlice> & _return, const ColumnParent& column_parent, const SlicePredicate& predicate, const KeyRange& range, const ConsistencyLevel consistency_level) = 0;
-  virtual void get_indexed_slices(std::vector<KeySlice> & _return, const ColumnParent& column_parent, const IndexClause& index_clause, const SlicePredicate& column_predicate, const ConsistencyLevel consistency_level) = 0;
-  virtual void insert(const std::string& key, const ColumnParent& column_parent, const Column& column, const ConsistencyLevel consistency_level) = 0;
-  virtual void remove(const std::string& key, const ColumnPath& column_path, const Clock& clock, const ConsistencyLevel consistency_level) = 0;
-  virtual void batch_mutate(const std::map<std::string, std::map<std::string, std::vector<Mutation> > > & mutation_map, const ConsistencyLevel consistency_level) = 0;
+  virtual int32_t get_count(const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level) = 0;
+  virtual void multiget_slice(std::map<std::string, std::vector<ColumnOrSuperColumn> > & _return, const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level) = 0;
+  virtual void multiget_count(std::map<std::string, int32_t> & _return, const std::string& keyspace, const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level) = 0;
+  virtual void get_range_slices(std::vector<KeySlice> & _return, const ColumnParent& column_parent, const SlicePredicate& predicate, const KeyRange& range, const ConsistencyLevel::type consistency_level) = 0;
+  virtual void get_indexed_slices(std::vector<KeySlice> & _return, const ColumnParent& column_parent, const IndexClause& index_clause, const SlicePredicate& column_predicate, const ConsistencyLevel::type consistency_level) = 0;
+  virtual void insert(const std::string& key, const ColumnParent& column_parent, const Column& column, const ConsistencyLevel::type consistency_level) = 0;
+  virtual void remove(const std::string& key, const ColumnPath& column_path, const Clock& clock, const ConsistencyLevel::type consistency_level) = 0;
+  virtual void batch_mutate(const std::map<std::string, std::map<std::string, std::vector<Mutation> > > & mutation_map, const ConsistencyLevel::type consistency_level) = 0;
   virtual void truncate(const std::string& cfname) = 0;
   virtual void check_schema_agreement(std::map<std::string, std::vector<std::string> > & _return) = 0;
   virtual void describe_keyspaces(std::vector<KsDef> & _return) = 0;
