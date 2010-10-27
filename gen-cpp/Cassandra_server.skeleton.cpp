@@ -32,52 +32,52 @@ class CassandraHandler : virtual public CassandraIf {
     printf("set_keyspace\n");
   }
 
-  void get(ColumnOrSuperColumn& _return, const std::string& key, const ColumnPath& column_path, const ConsistencyLevel consistency_level) {
+  void get(ColumnOrSuperColumn& _return, const std::string& key, const ColumnPath& column_path, const ConsistencyLevel::type consistency_level) {
     // Your implementation goes here
     printf("get\n");
   }
 
-  void get_slice(std::vector<ColumnOrSuperColumn> & _return, const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level) {
+  void get_slice(std::vector<ColumnOrSuperColumn> & _return, const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level) {
     // Your implementation goes here
     printf("get_slice\n");
   }
 
-  int32_t get_count(const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level) {
+  int32_t get_count(const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level) {
     // Your implementation goes here
     printf("get_count\n");
   }
 
-  void multiget_slice(std::map<std::string, std::vector<ColumnOrSuperColumn> > & _return, const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level) {
+  void multiget_slice(std::map<std::string, std::vector<ColumnOrSuperColumn> > & _return, const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level) {
     // Your implementation goes here
     printf("multiget_slice\n");
   }
 
-  void multiget_count(std::map<std::string, int32_t> & _return, const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level) {
+  void multiget_count(std::map<std::string, int32_t> & _return, const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level) {
     // Your implementation goes here
     printf("multiget_count\n");
   }
 
-  void get_range_slices(std::vector<KeySlice> & _return, const ColumnParent& column_parent, const SlicePredicate& predicate, const KeyRange& range, const ConsistencyLevel consistency_level) {
+  void get_range_slices(std::vector<KeySlice> & _return, const ColumnParent& column_parent, const SlicePredicate& predicate, const KeyRange& range, const ConsistencyLevel::type consistency_level) {
     // Your implementation goes here
     printf("get_range_slices\n");
   }
 
-  void get_indexed_slices(std::vector<KeySlice> & _return, const ColumnParent& column_parent, const IndexClause& index_clause, const SlicePredicate& column_predicate, const ConsistencyLevel consistency_level) {
+  void get_indexed_slices(std::vector<KeySlice> & _return, const ColumnParent& column_parent, const IndexClause& index_clause, const SlicePredicate& column_predicate, const ConsistencyLevel::type consistency_level) {
     // Your implementation goes here
     printf("get_indexed_slices\n");
   }
 
-  void insert(const std::string& key, const ColumnParent& column_parent, const Column& column, const ConsistencyLevel consistency_level) {
+  void insert(const std::string& key, const ColumnParent& column_parent, const Column& column, const ConsistencyLevel::type consistency_level) {
     // Your implementation goes here
     printf("insert\n");
   }
 
-  void remove(const std::string& key, const ColumnPath& column_path, const int64_t timestamp, const ConsistencyLevel consistency_level) {
+  void remove(const std::string& key, const ColumnPath& column_path, const int64_t timestamp, const ConsistencyLevel::type consistency_level) {
     // Your implementation goes here
     printf("remove\n");
   }
 
-  void batch_mutate(const std::map<std::string, std::map<std::string, std::vector<Mutation> > > & mutation_map, const ConsistencyLevel consistency_level) {
+  void batch_mutate(const std::map<std::string, std::map<std::string, std::vector<Mutation> > > & mutation_map, const ConsistencyLevel::type consistency_level) {
     // Your implementation goes here
     printf("batch_mutate\n");
   }
@@ -142,11 +142,6 @@ class CassandraHandler : virtual public CassandraIf {
     printf("system_drop_column_family\n");
   }
 
-  void system_rename_column_family(std::string& _return, const std::string& old_name, const std::string& new_name) {
-    // Your implementation goes here
-    printf("system_rename_column_family\n");
-  }
-
   void system_add_keyspace(std::string& _return, const KsDef& ks_def) {
     // Your implementation goes here
     printf("system_add_keyspace\n");
@@ -155,11 +150,6 @@ class CassandraHandler : virtual public CassandraIf {
   void system_drop_keyspace(std::string& _return, const std::string& keyspace) {
     // Your implementation goes here
     printf("system_drop_keyspace\n");
-  }
-
-  void system_rename_keyspace(std::string& _return, const std::string& old_name, const std::string& new_name) {
-    // Your implementation goes here
-    printf("system_rename_keyspace\n");
   }
 
   void system_update_keyspace(std::string& _return, const KsDef& ks_def) {

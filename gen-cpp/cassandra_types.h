@@ -15,30 +15,35 @@
 
 namespace org { namespace apache { namespace cassandra {
 
-enum ConsistencyLevel {
-  ZERO = 0,
-  ONE = 1,
-  QUORUM = 2,
-  DCQUORUM = 3,
-  DCQUORUMSYNC = 4,
-  ALL = 5,
-  ANY = 6
+struct ConsistencyLevel {
+  enum type {
+    ONE = 1,
+    QUORUM = 2,
+    LOCAL_QUORUM = 3,
+    EACH_QUORUM = 4,
+    ALL = 5,
+    ANY = 6
+  };
 };
 
 // enum
 extern ::apache::thrift::reflection::local::TypeSpec
 trlo_typespec_cassandra_DA45EC4BE6574774008DF9BE683A4778;
 
-enum IndexOperator {
-  EQ = 0,
-  GTE = 1,
-  GT = 2,
-  LTE = 3,
-  LT = 4
+struct IndexOperator {
+  enum type {
+    EQ = 0,
+    GTE = 1,
+    GT = 2,
+    LTE = 3,
+    LT = 4
+  };
 };
 
-enum IndexType {
-  KEYS = 0
+struct IndexType {
+  enum type {
+    KEYS = 0
+  };
 };
 
 typedef struct _Column__isset {
@@ -625,7 +630,7 @@ class IndexExpression {
   static ::apache::thrift::reflection::local::TypeSpec* local_reflection;
 
   std::string column_name;
-  IndexOperator op;
+  IndexOperator::type op;
   std::string value;
 
   bool operator == (const IndexExpression & rhs) const
@@ -1060,7 +1065,7 @@ class ColumnDef {
 
   std::string name;
   std::string validation_class;
-  IndexType index_type;
+  IndexType::type index_type;
   std::string index_name;
 
   _ColumnDef__isset __isset;
@@ -1097,13 +1102,12 @@ extern ::apache::thrift::reflection::local::TypeSpec
 trlo_typespec_cassandra_A5AC27AF2178A2927C057F23978619E4;
 
 typedef struct _CfDef__isset {
-  _CfDef__isset() : column_type(false), comparator_type(false), subcomparator_type(false), comment(false), row_cache_size(false), preload_row_cache(false), key_cache_size(false), read_repair_chance(false), column_metadata(false), gc_grace_seconds(false), default_validation_class(false), id(false), min_compaction_threshold(false), max_compaction_threshold(false) {}
+  _CfDef__isset() : column_type(false), comparator_type(false), subcomparator_type(false), comment(false), row_cache_size(false), key_cache_size(false), read_repair_chance(false), column_metadata(false), gc_grace_seconds(false), default_validation_class(false), id(false), min_compaction_threshold(false), max_compaction_threshold(false), row_cache_save_period_in_seconds(false), key_cache_save_period_in_seconds(false), memtable_flush_after_mins(false), memtable_throughput_in_mb(false), memtable_operations_in_millions(false) {}
   bool column_type;
   bool comparator_type;
   bool subcomparator_type;
   bool comment;
   bool row_cache_size;
-  bool preload_row_cache;
   bool key_cache_size;
   bool read_repair_chance;
   bool column_metadata;
@@ -1112,15 +1116,20 @@ typedef struct _CfDef__isset {
   bool id;
   bool min_compaction_threshold;
   bool max_compaction_threshold;
+  bool row_cache_save_period_in_seconds;
+  bool key_cache_save_period_in_seconds;
+  bool memtable_flush_after_mins;
+  bool memtable_throughput_in_mb;
+  bool memtable_operations_in_millions;
 } _CfDef__isset;
 
 class CfDef {
  public:
 
-  static const char* ascii_fingerprint; // = "F1977D780FBC587EC4DB0697ED036F3F";
-  static const uint8_t binary_fingerprint[16]; // = {0xF1,0x97,0x7D,0x78,0x0F,0xBC,0x58,0x7E,0xC4,0xDB,0x06,0x97,0xED,0x03,0x6F,0x3F};
+  static const char* ascii_fingerprint; // = "2198376BDF233688F56E7E7A62BD2725";
+  static const uint8_t binary_fingerprint[16]; // = {0x21,0x98,0x37,0x6B,0xDF,0x23,0x36,0x88,0xF5,0x6E,0x7E,0x7A,0x62,0xBD,0x27,0x25};
 
-  CfDef() : keyspace(""), name(""), column_type("Standard"), comparator_type("BytesType"), subcomparator_type(""), comment(""), row_cache_size(0), preload_row_cache(false), key_cache_size(200000), read_repair_chance(1), gc_grace_seconds(0), default_validation_class(""), id(0), min_compaction_threshold(0), max_compaction_threshold(0) {
+  CfDef() : keyspace(""), name(""), column_type("Standard"), comparator_type("BytesType"), subcomparator_type(""), comment(""), row_cache_size(0), key_cache_size(200000), read_repair_chance(1), gc_grace_seconds(0), default_validation_class(""), id(0), min_compaction_threshold(0), max_compaction_threshold(0), row_cache_save_period_in_seconds(0), key_cache_save_period_in_seconds(0), memtable_flush_after_mins(0), memtable_throughput_in_mb(0), memtable_operations_in_millions(0) {
   }
 
   virtual ~CfDef() throw() {}
@@ -1134,7 +1143,6 @@ class CfDef {
   std::string subcomparator_type;
   std::string comment;
   double row_cache_size;
-  bool preload_row_cache;
   double key_cache_size;
   double read_repair_chance;
   std::vector<ColumnDef>  column_metadata;
@@ -1143,6 +1151,11 @@ class CfDef {
   int32_t id;
   int32_t min_compaction_threshold;
   int32_t max_compaction_threshold;
+  int32_t row_cache_save_period_in_seconds;
+  int32_t key_cache_save_period_in_seconds;
+  int32_t memtable_flush_after_mins;
+  int32_t memtable_throughput_in_mb;
+  double memtable_operations_in_millions;
 
   _CfDef__isset __isset;
 
@@ -1171,10 +1184,6 @@ class CfDef {
     if (__isset.row_cache_size != rhs.__isset.row_cache_size)
       return false;
     else if (__isset.row_cache_size && !(row_cache_size == rhs.row_cache_size))
-      return false;
-    if (__isset.preload_row_cache != rhs.__isset.preload_row_cache)
-      return false;
-    else if (__isset.preload_row_cache && !(preload_row_cache == rhs.preload_row_cache))
       return false;
     if (__isset.key_cache_size != rhs.__isset.key_cache_size)
       return false;
@@ -1208,6 +1217,26 @@ class CfDef {
       return false;
     else if (__isset.max_compaction_threshold && !(max_compaction_threshold == rhs.max_compaction_threshold))
       return false;
+    if (__isset.row_cache_save_period_in_seconds != rhs.__isset.row_cache_save_period_in_seconds)
+      return false;
+    else if (__isset.row_cache_save_period_in_seconds && !(row_cache_save_period_in_seconds == rhs.row_cache_save_period_in_seconds))
+      return false;
+    if (__isset.key_cache_save_period_in_seconds != rhs.__isset.key_cache_save_period_in_seconds)
+      return false;
+    else if (__isset.key_cache_save_period_in_seconds && !(key_cache_save_period_in_seconds == rhs.key_cache_save_period_in_seconds))
+      return false;
+    if (__isset.memtable_flush_after_mins != rhs.__isset.memtable_flush_after_mins)
+      return false;
+    else if (__isset.memtable_flush_after_mins && !(memtable_flush_after_mins == rhs.memtable_flush_after_mins))
+      return false;
+    if (__isset.memtable_throughput_in_mb != rhs.__isset.memtable_throughput_in_mb)
+      return false;
+    else if (__isset.memtable_throughput_in_mb && !(memtable_throughput_in_mb == rhs.memtable_throughput_in_mb))
+      return false;
+    if (__isset.memtable_operations_in_millions != rhs.__isset.memtable_operations_in_millions)
+      return false;
+    else if (__isset.memtable_operations_in_millions && !(memtable_operations_in_millions == rhs.memtable_operations_in_millions))
+      return false;
     return true;
   }
   bool operator != (const CfDef &rhs) const {
@@ -1229,9 +1258,9 @@ trlo_typespec_cassandra_E8CD7DA078A86726031AD64F35F5A6C0;
 extern ::apache::thrift::reflection::local::TypeSpec
 trlo_typespec_cassandra_F1B1AE393A6FED8FC52C319F72A0646C;
 
-// {1:string;2:string;3:opt-string;5:opt-string;6:opt-string;8:opt-string;9:opt-double;10:opt-bool;11:opt-double;12:opt-double;13:opt-list<{1:string;2:string;3:opt-enum;4:opt-string;}>;14:opt-i32;15:opt-string;16:opt-i32;17:opt-i32;18:opt-i32;}
+// {1:string;2:string;3:opt-string;5:opt-string;6:opt-string;8:opt-string;9:opt-double;11:opt-double;12:opt-double;13:opt-list<{1:string;2:string;3:opt-enum;4:opt-string;}>;14:opt-i32;15:opt-string;16:opt-i32;17:opt-i32;18:opt-i32;19:opt-i32;20:opt-i32;21:opt-i32;22:opt-i32;23:opt-double;}
 extern ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_F1977D780FBC587EC4DB0697ED036F3F;
+trlo_typespec_cassandra_2198376BDF233688F56E7E7A62BD2725;
 
 typedef struct _KsDef__isset {
   _KsDef__isset() : strategy_options(false) {}
@@ -1241,8 +1270,8 @@ typedef struct _KsDef__isset {
 class KsDef {
  public:
 
-  static const char* ascii_fingerprint; // = "D3D90EC08AB74A646044B5E43403D43E";
-  static const uint8_t binary_fingerprint[16]; // = {0xD3,0xD9,0x0E,0xC0,0x8A,0xB7,0x4A,0x64,0x60,0x44,0xB5,0xE4,0x34,0x03,0xD4,0x3E};
+  static const char* ascii_fingerprint; // = "75BE67EF161D3DF7F283FF5C63C5F31A";
+  static const uint8_t binary_fingerprint[16]; // = {0x75,0xBE,0x67,0xEF,0x16,0x1D,0x3D,0xF7,0xF2,0x83,0xFF,0x5C,0x63,0xC5,0xF3,0x1A};
 
   KsDef() : name(""), strategy_class(""), replication_factor(0) {
   }
@@ -1286,13 +1315,13 @@ class KsDef {
 
 };
 
-// list<{1:string;2:string;3:opt-string;5:opt-string;6:opt-string;8:opt-string;9:opt-double;10:opt-bool;11:opt-double;12:opt-double;13:opt-list<{1:string;2:string;3:opt-enum;4:opt-string;}>;14:opt-i32;15:opt-string;16:opt-i32;17:opt-i32;18:opt-i32;}>
+// list<{1:string;2:string;3:opt-string;5:opt-string;6:opt-string;8:opt-string;9:opt-double;11:opt-double;12:opt-double;13:opt-list<{1:string;2:string;3:opt-enum;4:opt-string;}>;14:opt-i32;15:opt-string;16:opt-i32;17:opt-i32;18:opt-i32;19:opt-i32;20:opt-i32;21:opt-i32;22:opt-i32;23:opt-double;}>
 extern ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_59A7AEBFB6339750D6AD54230D746729;
+trlo_typespec_cassandra_E9B932D979351B99A036EF48DDA89B79;
 
-// {1:string;2:string;3:opt-map<string,string>;4:i32;5:list<{1:string;2:string;3:opt-string;5:opt-string;6:opt-string;8:opt-string;9:opt-double;10:opt-bool;11:opt-double;12:opt-double;13:opt-list<{1:string;2:string;3:opt-enum;4:opt-string;}>;14:opt-i32;15:opt-string;16:opt-i32;17:opt-i32;18:opt-i32;}>;}
+// {1:string;2:string;3:opt-map<string,string>;4:i32;5:list<{1:string;2:string;3:opt-string;5:opt-string;6:opt-string;8:opt-string;9:opt-double;11:opt-double;12:opt-double;13:opt-list<{1:string;2:string;3:opt-enum;4:opt-string;}>;14:opt-i32;15:opt-string;16:opt-i32;17:opt-i32;18:opt-i32;19:opt-i32;20:opt-i32;21:opt-i32;22:opt-i32;23:opt-double;}>;}
 extern ::apache::thrift::reflection::local::TypeSpec
-trlo_typespec_cassandra_D3D90EC08AB74A646044B5E43403D43E;
+trlo_typespec_cassandra_75BE67EF161D3DF7F283FF5C63C5F31A;
 
 }}} // namespace
 

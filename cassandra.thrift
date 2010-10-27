@@ -46,7 +46,7 @@ namespace rb CassandraThrift
 #           for every edit that doesn't result in a change to major/minor.
 #
 # See the Semantic Versioning Specification (SemVer) http://semver.org.
-const string VERSION = "17.1.0"
+const string VERSION = "19.4.0"
 
 
 #
@@ -139,29 +139,26 @@ exception AuthorizationException {
  * important than consistency then you can use lower values for either or both.
  *
  * Write consistency levels make the following guarantees before reporting success to the client:
- *   ZERO         Ensure nothing. A write happens asynchronously in background
  *   ANY          Ensure that the write has been written once somewhere, including possibly being hinted in a non-target node.
  *   ONE          Ensure that the write has been written to at least 1 node's commit log and memory table
  *   QUORUM       Ensure that the write has been written to <ReplicationFactor> / 2 + 1 nodes
- *   DCQUORUM     Ensure that the write has been written to <ReplicationFactor> / 2 + 1 nodes, within the local datacenter (requires NetworkTopologyStrategy)
- *   DCQUORUMSYNC Ensure that the write has been written to <ReplicationFactor> / 2 + 1 nodes in each datacenter (requires NetworkTopologyStrategy)
+ *   LOCAL_QUORUM Ensure that the write has been written to <ReplicationFactor> / 2 + 1 nodes, within the local datacenter (requires NetworkTopologyStrategy)
+ *   EACH_QUORUM  Ensure that the write has been written to <ReplicationFactor> / 2 + 1 nodes in each datacenter (requires NetworkTopologyStrategy)
  *   ALL          Ensure that the write is written to <code>&lt;ReplicationFactor&gt;</code> nodes before responding to the client.
  *
  * Read:
- *   ZERO         Not supported, because it doesn't make sense.
  *   ANY          Not supported. You probably want ONE instead.
  *   ONE          Will return the record returned by the first node to respond. A consistency check is always done in a background thread to fix any consistency issues when ConsistencyLevel.ONE is used. This means subsequent calls will have correct data even if the initial read gets an older value. (This is called 'read repair'.)
  *   QUORUM       Will query all storage nodes and return the record with the most recent timestamp once it has at least a majority of replicas reported. Again, the remaining replicas will be checked in the background.
- *   DCQUORUM     Returns the record with the most recent timestamp once a majority of replicas within the local datacenter have replied.
- *   DCQUORUMSYNC Returns the record with the most recent timestamp once a majority of replicas within each datacenter have replied.
+ *   LOCAL_QUORUM Returns the record with the most recent timestamp once a majority of replicas within the local datacenter have replied.
+ *   EACH_QUORUM  Returns the record with the most recent timestamp once a majority of replicas within each datacenter have replied.
  *   ALL          Queries all storage nodes and returns the record with the most recent timestamp.
 */
 enum ConsistencyLevel {
-    ZERO = 0,
     ONE = 1,
     QUORUM = 2,
-    DCQUORUM = 3,
-    DCQUORUMSYNC = 4,
+    LOCAL_QUORUM = 3,
+    EACH_QUORUM = 4,
     ALL = 5,
     ANY = 6,
 }
@@ -336,7 +333,6 @@ struct CfDef {
     6: optional string subcomparator_type,
     8: optional string comment,
     9: optional double row_cache_size=0,
-    10: optional bool preload_row_cache=0,
     11: optional double key_cache_size=200000,
     12: optional double read_repair_chance=1.0,
     13: optional list<ColumnDef> column_metadata,
@@ -345,6 +341,11 @@ struct CfDef {
     16: optional i32 id,
     17: optional i32 min_compaction_threshold,
     18: optional i32 max_compaction_threshold,
+    19: optional i32 row_cache_save_period_in_seconds,
+    20: optional i32 key_cache_save_period_in_seconds,
+    21: optional i32 memtable_flush_after_mins,
+    22: optional i32 memtable_throughput_in_mb,
+    23: optional double memtable_operations_in_millions,
 }
 
 /* describes a keyspace. */
@@ -371,7 +372,7 @@ service Cassandra {
    */
   ColumnOrSuperColumn get(1:required binary key,
                           2:required ColumnPath column_path,
-                          3:required ConsistencyLevel consistency_level=ONE)
+                          3:required ConsistencyLevel consistency_level=ConsistencyLevel.ONE)
                       throws (1:InvalidRequestException ire, 2:NotFoundException nfe, 3:UnavailableException ue, 4:TimedOutException te),
 
   /**
@@ -381,7 +382,7 @@ service Cassandra {
   list<ColumnOrSuperColumn> get_slice(1:required binary key, 
                                       2:required ColumnParent column_parent, 
                                       3:required SlicePredicate predicate, 
-                                      4:required ConsistencyLevel consistency_level=ONE)
+                                      4:required ConsistencyLevel consistency_level=ConsistencyLevel.ONE)
                             throws (1:InvalidRequestException ire, 2:UnavailableException ue, 3:TimedOutException te),
 
   /**
@@ -391,7 +392,7 @@ service Cassandra {
   i32 get_count(1:required binary key, 
                 2:required ColumnParent column_parent, 
                 3:required SlicePredicate predicate,
-                4:required ConsistencyLevel consistency_level=ONE)
+                4:required ConsistencyLevel consistency_level=ConsistencyLevel.ONE)
       throws (1:InvalidRequestException ire, 2:UnavailableException ue, 3:TimedOutException te),
 
   /**
@@ -400,7 +401,7 @@ service Cassandra {
   map<binary,list<ColumnOrSuperColumn>> multiget_slice(1:required list<binary> keys, 
                                                        2:required ColumnParent column_parent, 
                                                        3:required SlicePredicate predicate, 
-                                                       4:required ConsistencyLevel consistency_level=ONE)
+                                                       4:required ConsistencyLevel consistency_level=ConsistencyLevel.ONE)
                                         throws (1:InvalidRequestException ire, 2:UnavailableException ue, 3:TimedOutException te),
 
   /**
@@ -409,7 +410,7 @@ service Cassandra {
   map<binary, i32> multiget_count(1:required list<binary> keys,
                 2:required ColumnParent column_parent,
                 3:required SlicePredicate predicate,
-                4:required ConsistencyLevel consistency_level=ONE)
+                4:required ConsistencyLevel consistency_level=ConsistencyLevel.ONE)
       throws (1:InvalidRequestException ire, 2:UnavailableException ue, 3:TimedOutException te),
 
   /**
@@ -418,14 +419,14 @@ service Cassandra {
   list<KeySlice> get_range_slices(1:required ColumnParent column_parent, 
                                   2:required SlicePredicate predicate,
                                   3:required KeyRange range,
-                                  4:required ConsistencyLevel consistency_level=ONE)
+                                  4:required ConsistencyLevel consistency_level=ConsistencyLevel.ONE)
                  throws (1:InvalidRequestException ire, 2:UnavailableException ue, 3:TimedOutException te),
 
   /** Returns the subset of columns specified in SlicePredicate for the rows matching the IndexClause */
   list<KeySlice> get_indexed_slices(1:required ColumnParent column_parent,
                                     2:required IndexClause index_clause,
                                     3:required SlicePredicate column_predicate,
-                                    4:required ConsistencyLevel consistency_level=ONE)
+                                    4:required ConsistencyLevel consistency_level=ConsistencyLevel.ONE)
                  throws (1:InvalidRequestException ire, 2:UnavailableException ue, 3:TimedOutException te),
 
   # modification methods
@@ -436,7 +437,7 @@ service Cassandra {
   void insert(1:required binary key, 
               2:required ColumnParent column_parent,
               3:required Column column,
-              4:required ConsistencyLevel consistency_level=ONE)
+              4:required ConsistencyLevel consistency_level=ConsistencyLevel.ONE)
        throws (1:InvalidRequestException ire, 2:UnavailableException ue, 3:TimedOutException te),
 
   /**
@@ -447,7 +448,7 @@ service Cassandra {
   void remove(1:required binary key,
               2:required ColumnPath column_path,
               3:required i64 timestamp,
-              4:ConsistencyLevel consistency_level=ONE)
+              4:ConsistencyLevel consistency_level=ConsistencyLevel.ONE)
        throws (1:InvalidRequestException ire, 2:UnavailableException ue, 3:TimedOutException te),
 
   /**
@@ -456,7 +457,7 @@ service Cassandra {
     mutation_map maps key to column family to a list of Mutation objects to take place at that scope.
   **/
   void batch_mutate(1:required map<binary, map<string, list<Mutation>>> mutation_map,
-                    2:required ConsistencyLevel consistency_level=ONE)
+                    2:required ConsistencyLevel consistency_level=ConsistencyLevel.ONE)
        throws (1:InvalidRequestException ire, 2:UnavailableException ue, 3:TimedOutException te),
        
   /**
@@ -482,7 +483,8 @@ service Cassandra {
        throws (1: InvalidRequestException ire),
 
   /** list the defined keyspaces in this cluster */
-  list<KsDef> describe_keyspaces(),
+  list<KsDef> describe_keyspaces()
+    throws (1:InvalidRequestException ire),
 
   /** get the cluster name */
   string describe_cluster_name(),
@@ -509,7 +511,7 @@ service Cassandra {
 
   /** describe specified keyspace */
   KsDef describe_keyspace(1:required string keyspace)
-        throws (1:NotFoundException nfe),
+    throws (1:NotFoundException nfe, 2:InvalidRequestException ire),
 
   /** experimental API for hadoop/parallel query support.  
       may change violently and without warning. 
@@ -528,10 +530,6 @@ service Cassandra {
   /** drops a column family. returns the new schema id. */
   string system_drop_column_family(1:required string column_family)
     throws (1:InvalidRequestException ire), 
-    
-  /** renames a column family. returns the new schema id. */
-  string system_rename_column_family(1:required string old_name, 2:required string new_name)
-    throws (1:InvalidRequestException ire),
   
   /** adds a keyspace and any column families that are part of it. returns the new schema id. */
   string system_add_keyspace(1:required KsDef ks_def)
@@ -539,10 +537,6 @@ service Cassandra {
   
   /** drops a keyspace and any column families that are part of it. returns the new schema id. */
   string system_drop_keyspace(1:required string keyspace)
-    throws (1:InvalidRequestException ire),
-    
-  /** renames a keyspace. returns the new schema id. */
-  string system_rename_keyspace(1:required string old_name, 2:required string new_name)
     throws (1:InvalidRequestException ire),
   
   /** updates properties of a keyspace. returns the new schema id. */

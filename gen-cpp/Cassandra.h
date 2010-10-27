@@ -16,16 +16,16 @@ class CassandraIf {
   virtual ~CassandraIf() {}
   virtual void login(const AuthenticationRequest& auth_request) = 0;
   virtual void set_keyspace(const std::string& keyspace) = 0;
-  virtual void get(ColumnOrSuperColumn& _return, const std::string& key, const ColumnPath& column_path, const ConsistencyLevel consistency_level) = 0;
-  virtual void get_slice(std::vector<ColumnOrSuperColumn> & _return, const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level) = 0;
-  virtual int32_t get_count(const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level) = 0;
-  virtual void multiget_slice(std::map<std::string, std::vector<ColumnOrSuperColumn> > & _return, const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level) = 0;
-  virtual void multiget_count(std::map<std::string, int32_t> & _return, const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level) = 0;
-  virtual void get_range_slices(std::vector<KeySlice> & _return, const ColumnParent& column_parent, const SlicePredicate& predicate, const KeyRange& range, const ConsistencyLevel consistency_level) = 0;
-  virtual void get_indexed_slices(std::vector<KeySlice> & _return, const ColumnParent& column_parent, const IndexClause& index_clause, const SlicePredicate& column_predicate, const ConsistencyLevel consistency_level) = 0;
-  virtual void insert(const std::string& key, const ColumnParent& column_parent, const Column& column, const ConsistencyLevel consistency_level) = 0;
-  virtual void remove(const std::string& key, const ColumnPath& column_path, const int64_t timestamp, const ConsistencyLevel consistency_level) = 0;
-  virtual void batch_mutate(const std::map<std::string, std::map<std::string, std::vector<Mutation> > > & mutation_map, const ConsistencyLevel consistency_level) = 0;
+  virtual void get(ColumnOrSuperColumn& _return, const std::string& key, const ColumnPath& column_path, const ConsistencyLevel::type consistency_level) = 0;
+  virtual void get_slice(std::vector<ColumnOrSuperColumn> & _return, const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level) = 0;
+  virtual int32_t get_count(const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level) = 0;
+  virtual void multiget_slice(std::map<std::string, std::vector<ColumnOrSuperColumn> > & _return, const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level) = 0;
+  virtual void multiget_count(std::map<std::string, int32_t> & _return, const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level) = 0;
+  virtual void get_range_slices(std::vector<KeySlice> & _return, const ColumnParent& column_parent, const SlicePredicate& predicate, const KeyRange& range, const ConsistencyLevel::type consistency_level) = 0;
+  virtual void get_indexed_slices(std::vector<KeySlice> & _return, const ColumnParent& column_parent, const IndexClause& index_clause, const SlicePredicate& column_predicate, const ConsistencyLevel::type consistency_level) = 0;
+  virtual void insert(const std::string& key, const ColumnParent& column_parent, const Column& column, const ConsistencyLevel::type consistency_level) = 0;
+  virtual void remove(const std::string& key, const ColumnPath& column_path, const int64_t timestamp, const ConsistencyLevel::type consistency_level) = 0;
+  virtual void batch_mutate(const std::map<std::string, std::map<std::string, std::vector<Mutation> > > & mutation_map, const ConsistencyLevel::type consistency_level) = 0;
   virtual void truncate(const std::string& cfname) = 0;
   virtual void describe_schema_versions(std::map<std::string, std::vector<std::string> > & _return) = 0;
   virtual void describe_keyspaces(std::vector<KsDef> & _return) = 0;
@@ -38,10 +38,8 @@ class CassandraIf {
   virtual void describe_splits(std::vector<std::string> & _return, const std::string& cfName, const std::string& start_token, const std::string& end_token, const int32_t keys_per_split) = 0;
   virtual void system_add_column_family(std::string& _return, const CfDef& cf_def) = 0;
   virtual void system_drop_column_family(std::string& _return, const std::string& column_family) = 0;
-  virtual void system_rename_column_family(std::string& _return, const std::string& old_name, const std::string& new_name) = 0;
   virtual void system_add_keyspace(std::string& _return, const KsDef& ks_def) = 0;
   virtual void system_drop_keyspace(std::string& _return, const std::string& keyspace) = 0;
-  virtual void system_rename_keyspace(std::string& _return, const std::string& old_name, const std::string& new_name) = 0;
   virtual void system_update_keyspace(std::string& _return, const KsDef& ks_def) = 0;
   virtual void system_update_column_family(std::string& _return, const CfDef& cf_def) = 0;
 };
@@ -55,35 +53,35 @@ class CassandraNull : virtual public CassandraIf {
   void set_keyspace(const std::string& /* keyspace */) {
     return;
   }
-  void get(ColumnOrSuperColumn& /* _return */, const std::string& /* key */, const ColumnPath& /* column_path */, const ConsistencyLevel /* consistency_level */) {
+  void get(ColumnOrSuperColumn& /* _return */, const std::string& /* key */, const ColumnPath& /* column_path */, const ConsistencyLevel::type /* consistency_level */) {
     return;
   }
-  void get_slice(std::vector<ColumnOrSuperColumn> & /* _return */, const std::string& /* key */, const ColumnParent& /* column_parent */, const SlicePredicate& /* predicate */, const ConsistencyLevel /* consistency_level */) {
+  void get_slice(std::vector<ColumnOrSuperColumn> & /* _return */, const std::string& /* key */, const ColumnParent& /* column_parent */, const SlicePredicate& /* predicate */, const ConsistencyLevel::type /* consistency_level */) {
     return;
   }
-  int32_t get_count(const std::string& /* key */, const ColumnParent& /* column_parent */, const SlicePredicate& /* predicate */, const ConsistencyLevel /* consistency_level */) {
+  int32_t get_count(const std::string& /* key */, const ColumnParent& /* column_parent */, const SlicePredicate& /* predicate */, const ConsistencyLevel::type /* consistency_level */) {
     int32_t _return = 0;
     return _return;
   }
-  void multiget_slice(std::map<std::string, std::vector<ColumnOrSuperColumn> > & /* _return */, const std::vector<std::string> & /* keys */, const ColumnParent& /* column_parent */, const SlicePredicate& /* predicate */, const ConsistencyLevel /* consistency_level */) {
+  void multiget_slice(std::map<std::string, std::vector<ColumnOrSuperColumn> > & /* _return */, const std::vector<std::string> & /* keys */, const ColumnParent& /* column_parent */, const SlicePredicate& /* predicate */, const ConsistencyLevel::type /* consistency_level */) {
     return;
   }
-  void multiget_count(std::map<std::string, int32_t> & /* _return */, const std::vector<std::string> & /* keys */, const ColumnParent& /* column_parent */, const SlicePredicate& /* predicate */, const ConsistencyLevel /* consistency_level */) {
+  void multiget_count(std::map<std::string, int32_t> & /* _return */, const std::vector<std::string> & /* keys */, const ColumnParent& /* column_parent */, const SlicePredicate& /* predicate */, const ConsistencyLevel::type /* consistency_level */) {
     return;
   }
-  void get_range_slices(std::vector<KeySlice> & /* _return */, const ColumnParent& /* column_parent */, const SlicePredicate& /* predicate */, const KeyRange& /* range */, const ConsistencyLevel /* consistency_level */) {
+  void get_range_slices(std::vector<KeySlice> & /* _return */, const ColumnParent& /* column_parent */, const SlicePredicate& /* predicate */, const KeyRange& /* range */, const ConsistencyLevel::type /* consistency_level */) {
     return;
   }
-  void get_indexed_slices(std::vector<KeySlice> & /* _return */, const ColumnParent& /* column_parent */, const IndexClause& /* index_clause */, const SlicePredicate& /* column_predicate */, const ConsistencyLevel /* consistency_level */) {
+  void get_indexed_slices(std::vector<KeySlice> & /* _return */, const ColumnParent& /* column_parent */, const IndexClause& /* index_clause */, const SlicePredicate& /* column_predicate */, const ConsistencyLevel::type /* consistency_level */) {
     return;
   }
-  void insert(const std::string& /* key */, const ColumnParent& /* column_parent */, const Column& /* column */, const ConsistencyLevel /* consistency_level */) {
+  void insert(const std::string& /* key */, const ColumnParent& /* column_parent */, const Column& /* column */, const ConsistencyLevel::type /* consistency_level */) {
     return;
   }
-  void remove(const std::string& /* key */, const ColumnPath& /* column_path */, const int64_t /* timestamp */, const ConsistencyLevel /* consistency_level */) {
+  void remove(const std::string& /* key */, const ColumnPath& /* column_path */, const int64_t /* timestamp */, const ConsistencyLevel::type /* consistency_level */) {
     return;
   }
-  void batch_mutate(const std::map<std::string, std::map<std::string, std::vector<Mutation> > > & /* mutation_map */, const ConsistencyLevel /* consistency_level */) {
+  void batch_mutate(const std::map<std::string, std::map<std::string, std::vector<Mutation> > > & /* mutation_map */, const ConsistencyLevel::type /* consistency_level */) {
     return;
   }
   void truncate(const std::string& /* cfname */) {
@@ -122,16 +120,10 @@ class CassandraNull : virtual public CassandraIf {
   void system_drop_column_family(std::string& /* _return */, const std::string& /* column_family */) {
     return;
   }
-  void system_rename_column_family(std::string& /* _return */, const std::string& /* old_name */, const std::string& /* new_name */) {
-    return;
-  }
   void system_add_keyspace(std::string& /* _return */, const KsDef& /* ks_def */) {
     return;
   }
   void system_drop_keyspace(std::string& /* _return */, const std::string& /* keyspace */) {
-    return;
-  }
-  void system_rename_keyspace(std::string& /* _return */, const std::string& /* old_name */, const std::string& /* new_name */) {
     return;
   }
   void system_update_keyspace(std::string& /* _return */, const KsDef& /* ks_def */) {
@@ -357,7 +349,7 @@ class Cassandra_get_args {
  public:
 
   Cassandra_get_args() : key("") {
-    consistency_level = (ConsistencyLevel)1;
+    consistency_level = (ConsistencyLevel::type)1;
 
   }
 
@@ -367,7 +359,7 @@ class Cassandra_get_args {
 
   std::string key;
   ColumnPath column_path;
-  ConsistencyLevel consistency_level;
+  ConsistencyLevel::type consistency_level;
 
   bool operator == (const Cassandra_get_args & rhs) const
   {
@@ -401,7 +393,7 @@ class Cassandra_get_pargs {
 
   const std::string* key;
   const ColumnPath* column_path;
-  const ConsistencyLevel* consistency_level;
+  const ConsistencyLevel::type* consistency_level;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -493,7 +485,7 @@ class Cassandra_get_slice_args {
  public:
 
   Cassandra_get_slice_args() : key("") {
-    consistency_level = (ConsistencyLevel)1;
+    consistency_level = (ConsistencyLevel::type)1;
 
   }
 
@@ -504,7 +496,7 @@ class Cassandra_get_slice_args {
   std::string key;
   ColumnParent column_parent;
   SlicePredicate predicate;
-  ConsistencyLevel consistency_level;
+  ConsistencyLevel::type consistency_level;
 
   bool operator == (const Cassandra_get_slice_args & rhs) const
   {
@@ -541,7 +533,7 @@ class Cassandra_get_slice_pargs {
   const std::string* key;
   const ColumnParent* column_parent;
   const SlicePredicate* predicate;
-  const ConsistencyLevel* consistency_level;
+  const ConsistencyLevel::type* consistency_level;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -627,7 +619,7 @@ class Cassandra_get_count_args {
  public:
 
   Cassandra_get_count_args() : key("") {
-    consistency_level = (ConsistencyLevel)1;
+    consistency_level = (ConsistencyLevel::type)1;
 
   }
 
@@ -638,7 +630,7 @@ class Cassandra_get_count_args {
   std::string key;
   ColumnParent column_parent;
   SlicePredicate predicate;
-  ConsistencyLevel consistency_level;
+  ConsistencyLevel::type consistency_level;
 
   bool operator == (const Cassandra_get_count_args & rhs) const
   {
@@ -675,7 +667,7 @@ class Cassandra_get_count_pargs {
   const std::string* key;
   const ColumnParent* column_parent;
   const SlicePredicate* predicate;
-  const ConsistencyLevel* consistency_level;
+  const ConsistencyLevel::type* consistency_level;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -761,7 +753,7 @@ class Cassandra_multiget_slice_args {
  public:
 
   Cassandra_multiget_slice_args() {
-    consistency_level = (ConsistencyLevel)1;
+    consistency_level = (ConsistencyLevel::type)1;
 
   }
 
@@ -772,7 +764,7 @@ class Cassandra_multiget_slice_args {
   std::vector<std::string>  keys;
   ColumnParent column_parent;
   SlicePredicate predicate;
-  ConsistencyLevel consistency_level;
+  ConsistencyLevel::type consistency_level;
 
   bool operator == (const Cassandra_multiget_slice_args & rhs) const
   {
@@ -809,7 +801,7 @@ class Cassandra_multiget_slice_pargs {
   const std::vector<std::string> * keys;
   const ColumnParent* column_parent;
   const SlicePredicate* predicate;
-  const ConsistencyLevel* consistency_level;
+  const ConsistencyLevel::type* consistency_level;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -895,7 +887,7 @@ class Cassandra_multiget_count_args {
  public:
 
   Cassandra_multiget_count_args() {
-    consistency_level = (ConsistencyLevel)1;
+    consistency_level = (ConsistencyLevel::type)1;
 
   }
 
@@ -906,7 +898,7 @@ class Cassandra_multiget_count_args {
   std::vector<std::string>  keys;
   ColumnParent column_parent;
   SlicePredicate predicate;
-  ConsistencyLevel consistency_level;
+  ConsistencyLevel::type consistency_level;
 
   bool operator == (const Cassandra_multiget_count_args & rhs) const
   {
@@ -943,7 +935,7 @@ class Cassandra_multiget_count_pargs {
   const std::vector<std::string> * keys;
   const ColumnParent* column_parent;
   const SlicePredicate* predicate;
-  const ConsistencyLevel* consistency_level;
+  const ConsistencyLevel::type* consistency_level;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -1029,7 +1021,7 @@ class Cassandra_get_range_slices_args {
  public:
 
   Cassandra_get_range_slices_args() {
-    consistency_level = (ConsistencyLevel)1;
+    consistency_level = (ConsistencyLevel::type)1;
 
   }
 
@@ -1040,7 +1032,7 @@ class Cassandra_get_range_slices_args {
   ColumnParent column_parent;
   SlicePredicate predicate;
   KeyRange range;
-  ConsistencyLevel consistency_level;
+  ConsistencyLevel::type consistency_level;
 
   bool operator == (const Cassandra_get_range_slices_args & rhs) const
   {
@@ -1077,7 +1069,7 @@ class Cassandra_get_range_slices_pargs {
   const ColumnParent* column_parent;
   const SlicePredicate* predicate;
   const KeyRange* range;
-  const ConsistencyLevel* consistency_level;
+  const ConsistencyLevel::type* consistency_level;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -1163,7 +1155,7 @@ class Cassandra_get_indexed_slices_args {
  public:
 
   Cassandra_get_indexed_slices_args() {
-    consistency_level = (ConsistencyLevel)1;
+    consistency_level = (ConsistencyLevel::type)1;
 
   }
 
@@ -1174,7 +1166,7 @@ class Cassandra_get_indexed_slices_args {
   ColumnParent column_parent;
   IndexClause index_clause;
   SlicePredicate column_predicate;
-  ConsistencyLevel consistency_level;
+  ConsistencyLevel::type consistency_level;
 
   bool operator == (const Cassandra_get_indexed_slices_args & rhs) const
   {
@@ -1211,7 +1203,7 @@ class Cassandra_get_indexed_slices_pargs {
   const ColumnParent* column_parent;
   const IndexClause* index_clause;
   const SlicePredicate* column_predicate;
-  const ConsistencyLevel* consistency_level;
+  const ConsistencyLevel::type* consistency_level;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -1297,7 +1289,7 @@ class Cassandra_insert_args {
  public:
 
   Cassandra_insert_args() : key("") {
-    consistency_level = (ConsistencyLevel)1;
+    consistency_level = (ConsistencyLevel::type)1;
 
   }
 
@@ -1308,7 +1300,7 @@ class Cassandra_insert_args {
   std::string key;
   ColumnParent column_parent;
   Column column;
-  ConsistencyLevel consistency_level;
+  ConsistencyLevel::type consistency_level;
 
   bool operator == (const Cassandra_insert_args & rhs) const
   {
@@ -1345,7 +1337,7 @@ class Cassandra_insert_pargs {
   const std::string* key;
   const ColumnParent* column_parent;
   const Column* column;
-  const ConsistencyLevel* consistency_level;
+  const ConsistencyLevel::type* consistency_level;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -1429,7 +1421,7 @@ class Cassandra_remove_args {
  public:
 
   Cassandra_remove_args() : key(""), timestamp(0) {
-    consistency_level = (ConsistencyLevel)1;
+    consistency_level = (ConsistencyLevel::type)1;
 
   }
 
@@ -1440,7 +1432,7 @@ class Cassandra_remove_args {
   std::string key;
   ColumnPath column_path;
   int64_t timestamp;
-  ConsistencyLevel consistency_level;
+  ConsistencyLevel::type consistency_level;
 
   _Cassandra_remove_args__isset __isset;
 
@@ -1479,7 +1471,7 @@ class Cassandra_remove_pargs {
   const std::string* key;
   const ColumnPath* column_path;
   const int64_t* timestamp;
-  const ConsistencyLevel* consistency_level;
+  const ConsistencyLevel::type* consistency_level;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -1559,7 +1551,7 @@ class Cassandra_batch_mutate_args {
  public:
 
   Cassandra_batch_mutate_args() {
-    consistency_level = (ConsistencyLevel)1;
+    consistency_level = (ConsistencyLevel::type)1;
 
   }
 
@@ -1568,7 +1560,7 @@ class Cassandra_batch_mutate_args {
   static ::apache::thrift::reflection::local::TypeSpec* local_reflection;
 
   std::map<std::string, std::map<std::string, std::vector<Mutation> > >  mutation_map;
-  ConsistencyLevel consistency_level;
+  ConsistencyLevel::type consistency_level;
 
   bool operator == (const Cassandra_batch_mutate_args & rhs) const
   {
@@ -1599,7 +1591,7 @@ class Cassandra_batch_mutate_pargs {
   static ::apache::thrift::reflection::local::TypeSpec* local_reflection;
 
   const std::map<std::string, std::map<std::string, std::vector<Mutation> > > * mutation_map;
-  const ConsistencyLevel* consistency_level;
+  const ConsistencyLevel::type* consistency_level;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -1928,8 +1920,9 @@ class Cassandra_describe_keyspaces_pargs {
 };
 
 typedef struct _Cassandra_describe_keyspaces_result__isset {
-  _Cassandra_describe_keyspaces_result__isset() : success(false) {}
+  _Cassandra_describe_keyspaces_result__isset() : success(false), ire(false) {}
   bool success;
+  bool ire;
 } _Cassandra_describe_keyspaces_result__isset;
 
 class Cassandra_describe_keyspaces_result {
@@ -1943,12 +1936,15 @@ class Cassandra_describe_keyspaces_result {
   static ::apache::thrift::reflection::local::TypeSpec* local_reflection;
 
   std::vector<KsDef>  success;
+  InvalidRequestException ire;
 
   _Cassandra_describe_keyspaces_result__isset __isset;
 
   bool operator == (const Cassandra_describe_keyspaces_result & rhs) const
   {
     if (!(success == rhs.success))
+      return false;
+    if (!(ire == rhs.ire))
       return false;
     return true;
   }
@@ -1964,8 +1960,9 @@ class Cassandra_describe_keyspaces_result {
 };
 
 typedef struct _Cassandra_describe_keyspaces_presult__isset {
-  _Cassandra_describe_keyspaces_presult__isset() : success(false) {}
+  _Cassandra_describe_keyspaces_presult__isset() : success(false), ire(false) {}
   bool success;
+  bool ire;
 } _Cassandra_describe_keyspaces_presult__isset;
 
 class Cassandra_describe_keyspaces_presult {
@@ -1977,6 +1974,7 @@ class Cassandra_describe_keyspaces_presult {
   static ::apache::thrift::reflection::local::TypeSpec* local_reflection;
 
   std::vector<KsDef> * success;
+  InvalidRequestException ire;
 
   _Cassandra_describe_keyspaces_presult__isset __isset;
 
@@ -2530,9 +2528,10 @@ class Cassandra_describe_keyspace_pargs {
 };
 
 typedef struct _Cassandra_describe_keyspace_result__isset {
-  _Cassandra_describe_keyspace_result__isset() : success(false), nfe(false) {}
+  _Cassandra_describe_keyspace_result__isset() : success(false), nfe(false), ire(false) {}
   bool success;
   bool nfe;
+  bool ire;
 } _Cassandra_describe_keyspace_result__isset;
 
 class Cassandra_describe_keyspace_result {
@@ -2547,6 +2546,7 @@ class Cassandra_describe_keyspace_result {
 
   KsDef success;
   NotFoundException nfe;
+  InvalidRequestException ire;
 
   _Cassandra_describe_keyspace_result__isset __isset;
 
@@ -2555,6 +2555,8 @@ class Cassandra_describe_keyspace_result {
     if (!(success == rhs.success))
       return false;
     if (!(nfe == rhs.nfe))
+      return false;
+    if (!(ire == rhs.ire))
       return false;
     return true;
   }
@@ -2570,9 +2572,10 @@ class Cassandra_describe_keyspace_result {
 };
 
 typedef struct _Cassandra_describe_keyspace_presult__isset {
-  _Cassandra_describe_keyspace_presult__isset() : success(false), nfe(false) {}
+  _Cassandra_describe_keyspace_presult__isset() : success(false), nfe(false), ire(false) {}
   bool success;
   bool nfe;
+  bool ire;
 } _Cassandra_describe_keyspace_presult__isset;
 
 class Cassandra_describe_keyspace_presult {
@@ -2585,6 +2588,7 @@ class Cassandra_describe_keyspace_presult {
 
   KsDef* success;
   NotFoundException nfe;
+  InvalidRequestException ire;
 
   _Cassandra_describe_keyspace_presult__isset __isset;
 
@@ -2923,118 +2927,6 @@ class Cassandra_system_drop_column_family_presult {
 };
 
 
-class Cassandra_system_rename_column_family_args {
- public:
-
-  Cassandra_system_rename_column_family_args() : old_name(""), new_name("") {
-  }
-
-  virtual ~Cassandra_system_rename_column_family_args() throw() {}
-
-  static ::apache::thrift::reflection::local::TypeSpec* local_reflection;
-
-  std::string old_name;
-  std::string new_name;
-
-  bool operator == (const Cassandra_system_rename_column_family_args & rhs) const
-  {
-    if (!(old_name == rhs.old_name))
-      return false;
-    if (!(new_name == rhs.new_name))
-      return false;
-    return true;
-  }
-  bool operator != (const Cassandra_system_rename_column_family_args &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const Cassandra_system_rename_column_family_args & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-
-class Cassandra_system_rename_column_family_pargs {
- public:
-
-
-  virtual ~Cassandra_system_rename_column_family_pargs() throw() {}
-
-  static ::apache::thrift::reflection::local::TypeSpec* local_reflection;
-
-  const std::string* old_name;
-  const std::string* new_name;
-
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _Cassandra_system_rename_column_family_result__isset {
-  _Cassandra_system_rename_column_family_result__isset() : success(false), ire(false) {}
-  bool success;
-  bool ire;
-} _Cassandra_system_rename_column_family_result__isset;
-
-class Cassandra_system_rename_column_family_result {
- public:
-
-  Cassandra_system_rename_column_family_result() : success("") {
-  }
-
-  virtual ~Cassandra_system_rename_column_family_result() throw() {}
-
-  static ::apache::thrift::reflection::local::TypeSpec* local_reflection;
-
-  std::string success;
-  InvalidRequestException ire;
-
-  _Cassandra_system_rename_column_family_result__isset __isset;
-
-  bool operator == (const Cassandra_system_rename_column_family_result & rhs) const
-  {
-    if (!(success == rhs.success))
-      return false;
-    if (!(ire == rhs.ire))
-      return false;
-    return true;
-  }
-  bool operator != (const Cassandra_system_rename_column_family_result &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const Cassandra_system_rename_column_family_result & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _Cassandra_system_rename_column_family_presult__isset {
-  _Cassandra_system_rename_column_family_presult__isset() : success(false), ire(false) {}
-  bool success;
-  bool ire;
-} _Cassandra_system_rename_column_family_presult__isset;
-
-class Cassandra_system_rename_column_family_presult {
- public:
-
-
-  virtual ~Cassandra_system_rename_column_family_presult() throw() {}
-
-  static ::apache::thrift::reflection::local::TypeSpec* local_reflection;
-
-  std::string* success;
-  InvalidRequestException ire;
-
-  _Cassandra_system_rename_column_family_presult__isset __isset;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-
-};
-
-
 class Cassandra_system_add_keyspace_args {
  public:
 
@@ -3245,118 +3137,6 @@ class Cassandra_system_drop_keyspace_presult {
   InvalidRequestException ire;
 
   _Cassandra_system_drop_keyspace_presult__isset __isset;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-
-};
-
-
-class Cassandra_system_rename_keyspace_args {
- public:
-
-  Cassandra_system_rename_keyspace_args() : old_name(""), new_name("") {
-  }
-
-  virtual ~Cassandra_system_rename_keyspace_args() throw() {}
-
-  static ::apache::thrift::reflection::local::TypeSpec* local_reflection;
-
-  std::string old_name;
-  std::string new_name;
-
-  bool operator == (const Cassandra_system_rename_keyspace_args & rhs) const
-  {
-    if (!(old_name == rhs.old_name))
-      return false;
-    if (!(new_name == rhs.new_name))
-      return false;
-    return true;
-  }
-  bool operator != (const Cassandra_system_rename_keyspace_args &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const Cassandra_system_rename_keyspace_args & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-
-class Cassandra_system_rename_keyspace_pargs {
- public:
-
-
-  virtual ~Cassandra_system_rename_keyspace_pargs() throw() {}
-
-  static ::apache::thrift::reflection::local::TypeSpec* local_reflection;
-
-  const std::string* old_name;
-  const std::string* new_name;
-
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _Cassandra_system_rename_keyspace_result__isset {
-  _Cassandra_system_rename_keyspace_result__isset() : success(false), ire(false) {}
-  bool success;
-  bool ire;
-} _Cassandra_system_rename_keyspace_result__isset;
-
-class Cassandra_system_rename_keyspace_result {
- public:
-
-  Cassandra_system_rename_keyspace_result() : success("") {
-  }
-
-  virtual ~Cassandra_system_rename_keyspace_result() throw() {}
-
-  static ::apache::thrift::reflection::local::TypeSpec* local_reflection;
-
-  std::string success;
-  InvalidRequestException ire;
-
-  _Cassandra_system_rename_keyspace_result__isset __isset;
-
-  bool operator == (const Cassandra_system_rename_keyspace_result & rhs) const
-  {
-    if (!(success == rhs.success))
-      return false;
-    if (!(ire == rhs.ire))
-      return false;
-    return true;
-  }
-  bool operator != (const Cassandra_system_rename_keyspace_result &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const Cassandra_system_rename_keyspace_result & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _Cassandra_system_rename_keyspace_presult__isset {
-  _Cassandra_system_rename_keyspace_presult__isset() : success(false), ire(false) {}
-  bool success;
-  bool ire;
-} _Cassandra_system_rename_keyspace_presult__isset;
-
-class Cassandra_system_rename_keyspace_presult {
- public:
-
-
-  virtual ~Cassandra_system_rename_keyspace_presult() throw() {}
-
-  static ::apache::thrift::reflection::local::TypeSpec* local_reflection;
-
-  std::string* success;
-  InvalidRequestException ire;
-
-  _Cassandra_system_rename_keyspace_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -3604,35 +3384,35 @@ class CassandraClient : virtual public CassandraIf {
   void set_keyspace(const std::string& keyspace);
   void send_set_keyspace(const std::string& keyspace);
   void recv_set_keyspace();
-  void get(ColumnOrSuperColumn& _return, const std::string& key, const ColumnPath& column_path, const ConsistencyLevel consistency_level);
-  void send_get(const std::string& key, const ColumnPath& column_path, const ConsistencyLevel consistency_level);
+  void get(ColumnOrSuperColumn& _return, const std::string& key, const ColumnPath& column_path, const ConsistencyLevel::type consistency_level);
+  void send_get(const std::string& key, const ColumnPath& column_path, const ConsistencyLevel::type consistency_level);
   void recv_get(ColumnOrSuperColumn& _return);
-  void get_slice(std::vector<ColumnOrSuperColumn> & _return, const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level);
-  void send_get_slice(const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level);
+  void get_slice(std::vector<ColumnOrSuperColumn> & _return, const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level);
+  void send_get_slice(const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level);
   void recv_get_slice(std::vector<ColumnOrSuperColumn> & _return);
-  int32_t get_count(const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level);
-  void send_get_count(const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level);
+  int32_t get_count(const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level);
+  void send_get_count(const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level);
   int32_t recv_get_count();
-  void multiget_slice(std::map<std::string, std::vector<ColumnOrSuperColumn> > & _return, const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level);
-  void send_multiget_slice(const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level);
+  void multiget_slice(std::map<std::string, std::vector<ColumnOrSuperColumn> > & _return, const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level);
+  void send_multiget_slice(const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level);
   void recv_multiget_slice(std::map<std::string, std::vector<ColumnOrSuperColumn> > & _return);
-  void multiget_count(std::map<std::string, int32_t> & _return, const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level);
-  void send_multiget_count(const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level);
+  void multiget_count(std::map<std::string, int32_t> & _return, const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level);
+  void send_multiget_count(const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level);
   void recv_multiget_count(std::map<std::string, int32_t> & _return);
-  void get_range_slices(std::vector<KeySlice> & _return, const ColumnParent& column_parent, const SlicePredicate& predicate, const KeyRange& range, const ConsistencyLevel consistency_level);
-  void send_get_range_slices(const ColumnParent& column_parent, const SlicePredicate& predicate, const KeyRange& range, const ConsistencyLevel consistency_level);
+  void get_range_slices(std::vector<KeySlice> & _return, const ColumnParent& column_parent, const SlicePredicate& predicate, const KeyRange& range, const ConsistencyLevel::type consistency_level);
+  void send_get_range_slices(const ColumnParent& column_parent, const SlicePredicate& predicate, const KeyRange& range, const ConsistencyLevel::type consistency_level);
   void recv_get_range_slices(std::vector<KeySlice> & _return);
-  void get_indexed_slices(std::vector<KeySlice> & _return, const ColumnParent& column_parent, const IndexClause& index_clause, const SlicePredicate& column_predicate, const ConsistencyLevel consistency_level);
-  void send_get_indexed_slices(const ColumnParent& column_parent, const IndexClause& index_clause, const SlicePredicate& column_predicate, const ConsistencyLevel consistency_level);
+  void get_indexed_slices(std::vector<KeySlice> & _return, const ColumnParent& column_parent, const IndexClause& index_clause, const SlicePredicate& column_predicate, const ConsistencyLevel::type consistency_level);
+  void send_get_indexed_slices(const ColumnParent& column_parent, const IndexClause& index_clause, const SlicePredicate& column_predicate, const ConsistencyLevel::type consistency_level);
   void recv_get_indexed_slices(std::vector<KeySlice> & _return);
-  void insert(const std::string& key, const ColumnParent& column_parent, const Column& column, const ConsistencyLevel consistency_level);
-  void send_insert(const std::string& key, const ColumnParent& column_parent, const Column& column, const ConsistencyLevel consistency_level);
+  void insert(const std::string& key, const ColumnParent& column_parent, const Column& column, const ConsistencyLevel::type consistency_level);
+  void send_insert(const std::string& key, const ColumnParent& column_parent, const Column& column, const ConsistencyLevel::type consistency_level);
   void recv_insert();
-  void remove(const std::string& key, const ColumnPath& column_path, const int64_t timestamp, const ConsistencyLevel consistency_level);
-  void send_remove(const std::string& key, const ColumnPath& column_path, const int64_t timestamp, const ConsistencyLevel consistency_level);
+  void remove(const std::string& key, const ColumnPath& column_path, const int64_t timestamp, const ConsistencyLevel::type consistency_level);
+  void send_remove(const std::string& key, const ColumnPath& column_path, const int64_t timestamp, const ConsistencyLevel::type consistency_level);
   void recv_remove();
-  void batch_mutate(const std::map<std::string, std::map<std::string, std::vector<Mutation> > > & mutation_map, const ConsistencyLevel consistency_level);
-  void send_batch_mutate(const std::map<std::string, std::map<std::string, std::vector<Mutation> > > & mutation_map, const ConsistencyLevel consistency_level);
+  void batch_mutate(const std::map<std::string, std::map<std::string, std::vector<Mutation> > > & mutation_map, const ConsistencyLevel::type consistency_level);
+  void send_batch_mutate(const std::map<std::string, std::map<std::string, std::vector<Mutation> > > & mutation_map, const ConsistencyLevel::type consistency_level);
   void recv_batch_mutate();
   void truncate(const std::string& cfname);
   void send_truncate(const std::string& cfname);
@@ -3670,18 +3450,12 @@ class CassandraClient : virtual public CassandraIf {
   void system_drop_column_family(std::string& _return, const std::string& column_family);
   void send_system_drop_column_family(const std::string& column_family);
   void recv_system_drop_column_family(std::string& _return);
-  void system_rename_column_family(std::string& _return, const std::string& old_name, const std::string& new_name);
-  void send_system_rename_column_family(const std::string& old_name, const std::string& new_name);
-  void recv_system_rename_column_family(std::string& _return);
   void system_add_keyspace(std::string& _return, const KsDef& ks_def);
   void send_system_add_keyspace(const KsDef& ks_def);
   void recv_system_add_keyspace(std::string& _return);
   void system_drop_keyspace(std::string& _return, const std::string& keyspace);
   void send_system_drop_keyspace(const std::string& keyspace);
   void recv_system_drop_keyspace(std::string& _return);
-  void system_rename_keyspace(std::string& _return, const std::string& old_name, const std::string& new_name);
-  void send_system_rename_keyspace(const std::string& old_name, const std::string& new_name);
-  void recv_system_rename_keyspace(std::string& _return);
   void system_update_keyspace(std::string& _return, const KsDef& ks_def);
   void send_system_update_keyspace(const KsDef& ks_def);
   void recv_system_update_keyspace(std::string& _return);
@@ -3725,10 +3499,8 @@ class CassandraProcessor : virtual public ::apache::thrift::TProcessor {
   void process_describe_splits(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_system_add_column_family(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_system_drop_column_family(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
-  void process_system_rename_column_family(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_system_add_keyspace(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_system_drop_keyspace(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
-  void process_system_rename_keyspace(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_system_update_keyspace(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_system_update_column_family(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
  public:
@@ -3758,10 +3530,8 @@ class CassandraProcessor : virtual public ::apache::thrift::TProcessor {
     processMap_["describe_splits"] = &CassandraProcessor::process_describe_splits;
     processMap_["system_add_column_family"] = &CassandraProcessor::process_system_add_column_family;
     processMap_["system_drop_column_family"] = &CassandraProcessor::process_system_drop_column_family;
-    processMap_["system_rename_column_family"] = &CassandraProcessor::process_system_rename_column_family;
     processMap_["system_add_keyspace"] = &CassandraProcessor::process_system_add_keyspace;
     processMap_["system_drop_keyspace"] = &CassandraProcessor::process_system_drop_keyspace;
-    processMap_["system_rename_keyspace"] = &CassandraProcessor::process_system_rename_keyspace;
     processMap_["system_update_keyspace"] = &CassandraProcessor::process_system_update_keyspace;
     processMap_["system_update_column_family"] = &CassandraProcessor::process_system_update_column_family;
   }
@@ -3796,7 +3566,7 @@ class CassandraMultiface : virtual public CassandraIf {
     }
   }
 
-  void get(ColumnOrSuperColumn& _return, const std::string& key, const ColumnPath& column_path, const ConsistencyLevel consistency_level) {
+  void get(ColumnOrSuperColumn& _return, const std::string& key, const ColumnPath& column_path, const ConsistencyLevel::type consistency_level) {
     uint32_t sz = ifaces_.size();
     for (uint32_t i = 0; i < sz; ++i) {
       if (i == sz - 1) {
@@ -3808,7 +3578,7 @@ class CassandraMultiface : virtual public CassandraIf {
     }
   }
 
-  void get_slice(std::vector<ColumnOrSuperColumn> & _return, const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level) {
+  void get_slice(std::vector<ColumnOrSuperColumn> & _return, const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level) {
     uint32_t sz = ifaces_.size();
     for (uint32_t i = 0; i < sz; ++i) {
       if (i == sz - 1) {
@@ -3820,7 +3590,7 @@ class CassandraMultiface : virtual public CassandraIf {
     }
   }
 
-  int32_t get_count(const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level) {
+  int32_t get_count(const std::string& key, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level) {
     uint32_t sz = ifaces_.size();
     for (uint32_t i = 0; i < sz; ++i) {
       if (i == sz - 1) {
@@ -3831,7 +3601,7 @@ class CassandraMultiface : virtual public CassandraIf {
     }
   }
 
-  void multiget_slice(std::map<std::string, std::vector<ColumnOrSuperColumn> > & _return, const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level) {
+  void multiget_slice(std::map<std::string, std::vector<ColumnOrSuperColumn> > & _return, const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level) {
     uint32_t sz = ifaces_.size();
     for (uint32_t i = 0; i < sz; ++i) {
       if (i == sz - 1) {
@@ -3843,7 +3613,7 @@ class CassandraMultiface : virtual public CassandraIf {
     }
   }
 
-  void multiget_count(std::map<std::string, int32_t> & _return, const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel consistency_level) {
+  void multiget_count(std::map<std::string, int32_t> & _return, const std::vector<std::string> & keys, const ColumnParent& column_parent, const SlicePredicate& predicate, const ConsistencyLevel::type consistency_level) {
     uint32_t sz = ifaces_.size();
     for (uint32_t i = 0; i < sz; ++i) {
       if (i == sz - 1) {
@@ -3855,7 +3625,7 @@ class CassandraMultiface : virtual public CassandraIf {
     }
   }
 
-  void get_range_slices(std::vector<KeySlice> & _return, const ColumnParent& column_parent, const SlicePredicate& predicate, const KeyRange& range, const ConsistencyLevel consistency_level) {
+  void get_range_slices(std::vector<KeySlice> & _return, const ColumnParent& column_parent, const SlicePredicate& predicate, const KeyRange& range, const ConsistencyLevel::type consistency_level) {
     uint32_t sz = ifaces_.size();
     for (uint32_t i = 0; i < sz; ++i) {
       if (i == sz - 1) {
@@ -3867,7 +3637,7 @@ class CassandraMultiface : virtual public CassandraIf {
     }
   }
 
-  void get_indexed_slices(std::vector<KeySlice> & _return, const ColumnParent& column_parent, const IndexClause& index_clause, const SlicePredicate& column_predicate, const ConsistencyLevel consistency_level) {
+  void get_indexed_slices(std::vector<KeySlice> & _return, const ColumnParent& column_parent, const IndexClause& index_clause, const SlicePredicate& column_predicate, const ConsistencyLevel::type consistency_level) {
     uint32_t sz = ifaces_.size();
     for (uint32_t i = 0; i < sz; ++i) {
       if (i == sz - 1) {
@@ -3879,21 +3649,21 @@ class CassandraMultiface : virtual public CassandraIf {
     }
   }
 
-  void insert(const std::string& key, const ColumnParent& column_parent, const Column& column, const ConsistencyLevel consistency_level) {
+  void insert(const std::string& key, const ColumnParent& column_parent, const Column& column, const ConsistencyLevel::type consistency_level) {
     uint32_t sz = ifaces_.size();
     for (uint32_t i = 0; i < sz; ++i) {
       ifaces_[i]->insert(key, column_parent, column, consistency_level);
     }
   }
 
-  void remove(const std::string& key, const ColumnPath& column_path, const int64_t timestamp, const ConsistencyLevel consistency_level) {
+  void remove(const std::string& key, const ColumnPath& column_path, const int64_t timestamp, const ConsistencyLevel::type consistency_level) {
     uint32_t sz = ifaces_.size();
     for (uint32_t i = 0; i < sz; ++i) {
       ifaces_[i]->remove(key, column_path, timestamp, consistency_level);
     }
   }
 
-  void batch_mutate(const std::map<std::string, std::map<std::string, std::vector<Mutation> > > & mutation_map, const ConsistencyLevel consistency_level) {
+  void batch_mutate(const std::map<std::string, std::map<std::string, std::vector<Mutation> > > & mutation_map, const ConsistencyLevel::type consistency_level) {
     uint32_t sz = ifaces_.size();
     for (uint32_t i = 0; i < sz; ++i) {
       ifaces_[i]->batch_mutate(mutation_map, consistency_level);
@@ -4039,18 +3809,6 @@ class CassandraMultiface : virtual public CassandraIf {
     }
   }
 
-  void system_rename_column_family(std::string& _return, const std::string& old_name, const std::string& new_name) {
-    uint32_t sz = ifaces_.size();
-    for (uint32_t i = 0; i < sz; ++i) {
-      if (i == sz - 1) {
-        ifaces_[i]->system_rename_column_family(_return, old_name, new_name);
-        return;
-      } else {
-        ifaces_[i]->system_rename_column_family(_return, old_name, new_name);
-      }
-    }
-  }
-
   void system_add_keyspace(std::string& _return, const KsDef& ks_def) {
     uint32_t sz = ifaces_.size();
     for (uint32_t i = 0; i < sz; ++i) {
@@ -4071,18 +3829,6 @@ class CassandraMultiface : virtual public CassandraIf {
         return;
       } else {
         ifaces_[i]->system_drop_keyspace(_return, keyspace);
-      }
-    }
-  }
-
-  void system_rename_keyspace(std::string& _return, const std::string& old_name, const std::string& new_name) {
-    uint32_t sz = ifaces_.size();
-    for (uint32_t i = 0; i < sz; ++i) {
-      if (i == sz - 1) {
-        ifaces_[i]->system_rename_keyspace(_return, old_name, new_name);
-        return;
-      } else {
-        ifaces_[i]->system_rename_keyspace(_return, old_name, new_name);
       }
     }
   }
