@@ -41,7 +41,7 @@ None - this is all OO baby.
 =cut
 
 use Exporter 'import';
-our (@EXPORT, @EXPORT_OK, @EXPORT_TAGS);
+our (@EXPORT, @EXPORT_OK, %EXPORT_TAGS);
 BEGIN {
     my %c = (
              CONSISTENCY_ONE => 1,
