@@ -52,7 +52,7 @@ BEGIN {
              CONSISTENCY_ANY => 6,
             );
     push @EXPORT_OK, keys %c;
-    $EXPORT_TAGS{CONST} = \%c;
+    $EXPORT_TAGS{CONST} = [ keys %c ];
 
     require constant;
     constant->import(\%c);
