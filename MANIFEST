@@ -4,7 +4,9 @@ Makefile.PL
 README
 Cassandra.pm
 XCass.xs
+typemap
 cassandra.thrift
+regen-thrift.sh
 gen-cpp/Cassandra.cpp
 gen-cpp/Cassandra.h
 gen-cpp/Cassandra_server.skeleton.cpp
