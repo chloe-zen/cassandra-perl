@@ -38,6 +38,26 @@ None - this is all OO baby.
 
 =head1 METHODS
 
+=cut
+
+use Exporter 'import';
+our (@EXPORT, @EXPORT_OK, @EXPORT_TAGS);
+BEGIN {
+    my %c = (
+             CONSISTENCY_ONE => 1,
+             CONSISTENCY_QUORUM => 2,
+             CONSISTENCY_LOCAL_QUORUM => 3,
+             CONSISTENCY_EACH_QUORUM => 4,
+             CONSISTENCY_ALL => 5,
+             CONSISTENCY_ANY => 6,
+            );
+    push @EXPORT_OK, keys %c;
+    $EXPORT_TAGS{CONST} = \%c;
+
+    require constant;
+    constant->import(\%c);
+}
+
 =head2 function1
 
 =cut
